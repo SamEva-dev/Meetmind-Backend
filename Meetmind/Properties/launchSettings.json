@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Meetmind": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

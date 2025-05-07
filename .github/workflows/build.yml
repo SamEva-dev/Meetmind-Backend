@@ -1,0 +1,40 @@
+name: Backend Build & Test
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    paths:
+      - '**'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: backend/meetmind-backend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore
+      run: dotnet restore MeetMind/MeetMind.csproj
+
+    - name: Build
+      run: dotnet build MeetMind/MeetMind.csproj --no-restore --configuration Release
+
+    - name: Publish
+      run: dotnet publish MeetMind/MeetMind.csproj --no-restore -c Release -o out
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: meetmind-backend
+        path: backend/meetmind-backend/out

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  meetmind.api:
+    build:
+      context: ./backend/meetmind-backend
+      dockerfile: MeetMind/Dockerfile
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    volumes:
+      - ./backend/meetmind-backend/MeetMind/Logs:/app/Logs
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    container_name: meetmind-api
