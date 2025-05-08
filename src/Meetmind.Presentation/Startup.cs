@@ -3,6 +3,7 @@ using Asp.Versioning;
 using System.Text.Json;
 using Asp.Versioning.ApiExplorer;
 using Meetmind.Presentation.Extensions;
+using Meetmind.Presentation.Hubs;
 
 namespace Meetmind.Presentation
 {
@@ -38,8 +39,8 @@ namespace Meetmind.Presentation
 
             services.AddMediatR(cfg =>
             {
-                cfg.RegisterServicesFromAssemblyContaining<Startup>();
-                //cfg.RegisterServicesFromAssembly(typeof(Startup).Assembly);
+                //cfg.RegisterServicesFromAssemblyContaining<Startup>();
+                cfg.RegisterServicesFromAssembly(typeof(Startup).Assembly);
                 //cfg.RegisterServicesFromAssembly(typeof(GetMeetingsTodayQuery).Assembly);
             });
 
@@ -102,8 +103,8 @@ namespace Meetmind.Presentation
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<NotifyHub>("/hubs/notify");
             });
-
             // #endif
         }
     }

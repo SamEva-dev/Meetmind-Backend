@@ -12,11 +12,13 @@ public class StartMeetingCommandHandler : IRequestHandler<StartMeetingCommand, U
 {
     private readonly IMeetingRepository _repo;
     private readonly IUnitOfWork _uow;
+    private readonly INotifier _notifier;
 
-    public StartMeetingCommandHandler(IMeetingRepository repo, IUnitOfWork uow)
+    public StartMeetingCommandHandler(IMeetingRepository repo, IUnitOfWork uow, INotifier notifier)
     {
         _repo = repo;
         _uow = uow;
+        _notifier = notifier;
     }
 
     public async Task<Unit> Handle(StartMeetingCommand request, CancellationToken ct)
@@ -27,6 +29,7 @@ public class StartMeetingCommandHandler : IRequestHandler<StartMeetingCommand, U
 
         meeting.Start();
         await _uow.SaveChangesAsync(ct);
+        await _notifier.BroadcastMeetingStateAsync(meeting.Id, meeting.State.ToString(), ct);
         return Unit.Value;
     }
 }

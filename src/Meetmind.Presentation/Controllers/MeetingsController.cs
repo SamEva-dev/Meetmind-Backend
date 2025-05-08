@@ -1,4 +1,6 @@
 ﻿using MediatR;
+using Meetmind.Application.Commands;
+using Meetmind.Application.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Meetmind.Presentation.Controllers;
@@ -14,21 +16,21 @@ public class MeetingsController : ControllerBase
     [HttpPost("{id}/recording/start")]
     public async Task<IActionResult> Start(Guid id)
     {
-        //await _sender.Send(new StartMeetingCommand(id));
+        await _sender.Send(new StartMeetingCommand(id));
         return NoContent();
     }
 
     [HttpPost("{id}/recording/pause")]
     public async Task<IActionResult> Pause(Guid id)
     {
-        //await _sender.Send(new PauseMeetingCommand(id));
+        await _sender.Send(new PauseMeetingCommand(id));
         return NoContent();
     }
 
     [HttpPost("{id}/recording/resume")]
     public async Task<IActionResult> Resume(Guid id)
     {
-        //await _sender.Send(new ResumeMeetingCommand(id));
+        await _sender.Send(new ResumeMeetingCommand(id));
         return NoContent();
     }
 
@@ -36,14 +38,14 @@ public class MeetingsController : ControllerBase
     public async Task<IActionResult> Stop(Guid id)
     {
         var now = DateTime.UtcNow;
-        //await _sender.Send(new StopMeetingCommand(id, now));
+        await _sender.Send(new StopMeetingCommand(id, now));
         return NoContent();
     }
 
     [HttpGet("today")]
     public async Task<IActionResult> GetToday()
     {
-        //var result = await _sender.Send(new GetMeetingsTodayQuery());
+        var result = await _sender.Send(new GetMeetingsTodayQuery());
         return Ok();
     }
 }

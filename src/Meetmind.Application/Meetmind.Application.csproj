@@ -11,12 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Meetmind.Domain\Meetmind.Domain.csproj" />
-    <ProjectReference Include="..\Meetmind.Presentation\Meetmind.Presentation.csproj" />
   </ItemGroup>
 
 </Project>

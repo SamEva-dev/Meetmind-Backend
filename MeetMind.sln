@@ -5,8 +5,6 @@ VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meetmind", "Meetmind\Meetmind.csproj", "{99587ED5-E11D-499F-81F1-1B73BE6B77D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meetmind.Presentation", "src\Meetmind.Presentation\Meetmind.Presentation.csproj", "{D6419D32-1958-4A2A-888A-0C307C53A63B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meetmind.Application", "src\Meetmind.Application\Meetmind.Application.csproj", "{542FCA8C-FC62-4D25-ADAD-727F23619706}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meetmind.Domain", "src\Meetmind.Domain\Meetmind.Domain.csproj", "{EE2B5BE2-2F80-4678-9FD9-710CD37CE020}"
@@ -22,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetingTests", "Tests\MeetingTests\MeetingTests.csproj", "{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meetmind.Presentation", "src\Meetmind.Presentation\Meetmind.Presentation.csproj", "{5859556B-40AD-42BD-A3EA-36EEA72D194F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,10 +32,6 @@ Global
 		{99587ED5-E11D-499F-81F1-1B73BE6B77D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99587ED5-E11D-499F-81F1-1B73BE6B77D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99587ED5-E11D-499F-81F1-1B73BE6B77D8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D6419D32-1958-4A2A-888A-0C307C53A63B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D6419D32-1958-4A2A-888A-0C307C53A63B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D6419D32-1958-4A2A-888A-0C307C53A63B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D6419D32-1958-4A2A-888A-0C307C53A63B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{542FCA8C-FC62-4D25-ADAD-727F23619706}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{542FCA8C-FC62-4D25-ADAD-727F23619706}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{542FCA8C-FC62-4D25-ADAD-727F23619706}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -52,6 +48,10 @@ Global
 		{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5859556B-40AD-42BD-A3EA-36EEA72D194F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5859556B-40AD-42BD-A3EA-36EEA72D194F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5859556B-40AD-42BD-A3EA-36EEA72D194F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5859556B-40AD-42BD-A3EA-36EEA72D194F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
