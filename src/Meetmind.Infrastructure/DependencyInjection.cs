@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Meetmind.Application.Common.Interfaces;
+﻿using Meetmind.Application.Common.Interfaces;
 using Meetmind.Infrastructure.Auth;
+using Meetmind.Infrastructure.Db;
+using Meetmind.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +28,14 @@ namespace Meetmind.Infrastructure
             {
                 options.AddPolicy("Admin", policy => policy.RequireRole("admin"));
             });
+
+            var dbPath = config.GetConnectionString("Sqlite") ?? "Data/meetmind.db";
+            services.AddDbContext<MeetMindDbContext>(options =>
+                options.UseSqlite($"Data Source={dbPath}"));
+
+            services.AddScoped<IMeetingRepository, MeetingRepository>();
+            services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
+
 
             return services;
         }

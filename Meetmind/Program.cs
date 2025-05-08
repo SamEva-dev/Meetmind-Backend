@@ -1,6 +1,9 @@
-﻿using Meetmind.Presentation;
+﻿using Meetmind.Infrastructure;
+using Meetmind.Infrastructure.Db;
+using Meetmind.Presentation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,6 +28,8 @@ Log.Logger = new LoggerConfiguration()
 using var listener = new ActivityListenerConfiguration()
     .Instrument.AspNetCoreRequests()
     .TraceToSharedLogger();
+if (!Directory.Exists("Data")) Directory.CreateDirectory("Data");
+
 
 Log.Information("*** STARTUP ***");
 
@@ -36,7 +41,8 @@ var host = Host.CreateDefaultBuilder(args)
                 {
                     throw new InvalidOperationException("Configuration not initialized");
                 }
-               
+
+                services.AddInfrastructure(configuration);
             })
             .ConfigureLogging(logger =>
             {
@@ -51,30 +57,27 @@ var host = Host.CreateDefaultBuilder(args)
             .UseSerilog()
             .Build();
 
-            //bool converted = bool.TryParse(configuration["UseInMemoryRepository"], out bool inMemory);
-            //if (!converted || !inMemory)
-            //{
-            //    using (var scope = host.Services.CreateScope())
-            //    {
-            //        try
-            //        {
-            //            var context = scope.ServiceProvider.GetRequiredService<AssetDbContext>();
-            //            Console.WriteLine("Applying migrations...");
-            //            context.Database.Migrate();
+           
+                using (var scope = host.Services.CreateScope())
+                {
+                    try
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<MeetMindDbContext>();
+                        Console.WriteLine("Applying migrations...");
+                        context.Database.Migrate();
 
-            //            var pendingMigrations = context.Database.GetPendingMigrations();
+                        var pendingMigrations = context.Database.GetPendingMigrations();
 
-            //            if (pendingMigrations.Any())
-            //            {
-            //                Console.WriteLine($"Current database migration version: {pendingMigrations.Last()}");
-            //                Console.WriteLine("Migrations applied successfully.");
-            //            }
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            Console.WriteLine($"{ex.Message}");
-            //        }
-            //    }
-            //}
+                        if (pendingMigrations.Any())
+                        {
+                            Console.WriteLine($"Current database migration version: {pendingMigrations.Last()}");
+                            Console.WriteLine("Migrations applied successfully.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"{ex.Message}");
+                    }
+                }
 
 host.Run();

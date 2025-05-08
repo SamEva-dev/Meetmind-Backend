@@ -36,7 +36,13 @@ namespace Meetmind.Presentation
             }, new System.Reflection.Assembly[0]);
             services.AddEndpointsApiExplorer();
 
-            
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssemblyContaining<Startup>();
+                //cfg.RegisterServicesFromAssembly(typeof(Startup).Assembly);
+                //cfg.RegisterServicesFromAssembly(typeof(GetMeetingsTodayQuery).Assembly);
+            });
+
 
             services.AddCors(options =>
             {

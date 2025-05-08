@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Behaviors\" />
-    <Folder Include="Queries\" />
   </ItemGroup>
 
   <ItemGroup>

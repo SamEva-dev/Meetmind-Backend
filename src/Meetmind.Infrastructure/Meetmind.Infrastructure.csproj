@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Db\" />
     <Folder Include="Worker\" />
   </ItemGroup>
 

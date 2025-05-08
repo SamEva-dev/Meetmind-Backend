@@ -64,6 +64,8 @@ artifacts/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
+src/MeetMind.Infrastructure/Migrations
+MeetMind/Data
 
 # StyleCop
 StyleCopReport.xml
