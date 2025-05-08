@@ -4,6 +4,8 @@ using Meetmind.Application.Common.Interfaces;
 using Meetmind.Infrastructure.Db;
 using Meetmind.Infrastructure.Hubs;
 using Meetmind.Infrastructure.Repositories;
+using Meetmind.Infrastructure.Transcription;
+using Meetmind.Infrastructure.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +25,11 @@ namespace Meetmind.Infrastructure
             services.AddSingleton<INotifier, NotifyHubNotifier>();
             services.AddScoped<IMeetingRepository, MeetingRepository>();
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
+            services.AddScoped<IWhisperService, WhisperPythonService>();
+
+
+            services.AddHostedService<TranscriptionWorker>();
+
 
 
             return services;
