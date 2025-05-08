@@ -16,6 +16,7 @@ public class StartMeetingCommandHandlerTests
 {
     private readonly IMeetingRepository _repo = Substitute.For<IMeetingRepository>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
+    private readonly INotifier _notif = Substitute.For<INotifier>();
 
     [Fact]
     public async Task Should_Start_Meeting()
@@ -23,7 +24,7 @@ public class StartMeetingCommandHandlerTests
         var meeting = new Meeting("Test Meeting", DateTime.UtcNow);
         _repo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
 
-        var handler = new StartMeetingCommandHandler(_repo, _uow);
+        var handler = new StartMeetingCommandHandler(_repo, _uow, _notif);
         await handler.Handle(new StartMeetingCommand(meeting.Id), default);
 
         meeting.State.Should().Be(MeetingState.Recording);
@@ -36,7 +37,7 @@ public class StartMeetingCommandHandlerTests
         _repo.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns((Meeting?)null);
 
-        var handler = new StartMeetingCommandHandler(_repo, _uow);
+        var handler = new StartMeetingCommandHandler(_repo, _uow, _notif);
         var act = async () => await handler.Handle(new StartMeetingCommand(Guid.NewGuid()), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
