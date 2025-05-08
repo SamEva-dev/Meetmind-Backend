@@ -1,54 +1,80 @@
-﻿using Meetmind.Presentation.Hubs;
+﻿using Meetmind.Presentation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Logging;
 using Serilog;
+using SerilogTracing;
 
-var builder = WebApplication.CreateBuilder(args);
+var configurationBuilder = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .AddJsonFile("appsettings.json", false, true);
 
-// Load configuration (Serilog, Kestrel, etc. will be added later)
-//builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+IConfiguration configuration = configurationBuilder.Build();
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
-    //.Enrich.WithThreadId()
+    .Enrich.WithThreadId()
     .Enrich.WithProperty("MachineName", Environment.MachineName)
     .WriteTo.Console()
-    .ReadFrom.Configuration((IConfiguration)builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables())
+    .ReadFrom.Configuration(configuration)
     .CreateLogger();
 
-builder.Logging.AddSerilog(dispose: true);
+using var listener = new ActivityListenerConfiguration()
+    .Instrument.AspNetCoreRequests()
+    .TraceToSharedLogger();
 
+Log.Information("*** STARTUP ***");
 
-// Add services to the container
-builder.Services.AddControllers();
-builder.Services.AddSignalR();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "MeetMind API", Version = "v1" });
-});
+var host = Host.CreateDefaultBuilder(args)
+            .ConfigureServices((context, services) =>
+            {
+                services.AddSingleton(configuration!);
+                if (configuration == null)
+                {
+                    throw new InvalidOperationException("Configuration not initialized");
+                }
+               
+            })
+            .ConfigureLogging(logger =>
+            {
+                logger.ClearProviders();
+                logger.AddConsole();
+                logger.AddSerilog(dispose: true);
+            })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            })
+            .UseSerilog()
+            .Build();
 
-var app = builder.Build();
+            //bool converted = bool.TryParse(configuration["UseInMemoryRepository"], out bool inMemory);
+            //if (!converted || !inMemory)
+            //{
+            //    using (var scope = host.Services.CreateScope())
+            //    {
+            //        try
+            //        {
+            //            var context = scope.ServiceProvider.GetRequiredService<AssetDbContext>();
+            //            Console.WriteLine("Applying migrations...");
+            //            context.Database.Migrate();
 
-// Middlewares
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+            //            var pendingMigrations = context.Database.GetPendingMigrations();
 
-app.UseHttpsRedirection();
-app.UseRouting();
-app.UseAuthorization();
+            //            if (pendingMigrations.Any())
+            //            {
+            //                Console.WriteLine($"Current database migration version: {pendingMigrations.Last()}");
+            //                Console.WriteLine("Migrations applied successfully.");
+            //            }
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Console.WriteLine($"{ex.Message}");
+            //        }
+            //    }
+            //}
 
-app.MapControllers();
-app.MapHub<StateHub>("/hub/state");
-app.MapGet("/health", () => Results.Ok("Healthy"));
-
-app.Run();
+host.Run();

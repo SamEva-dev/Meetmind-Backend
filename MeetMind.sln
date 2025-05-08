@@ -18,6 +18,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.override.yml = docker-compose.override.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetingTests", "Tests\MeetingTests\MeetingTests.csproj", "{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,9 +48,16 @@ Global
 		{AE2B5A54-CDEA-488B-AA5E-FD8E69F32C50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE2B5A54-CDEA-488B-AA5E-FD8E69F32C50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE2B5A54-CDEA-488B-AA5E-FD8E69F32C50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9AA995C5-CFDC-4C4A-AB45-50B5A33A3A7B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {13215142-0B3F-4EDD-A06C-0D1F39ADCFB6}
