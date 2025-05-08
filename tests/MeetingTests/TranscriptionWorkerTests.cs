@@ -1,18 +1,22 @@
-﻿using Meetmind.Application.Common.Interfaces;
+﻿using FluentAssertions;
+using Meetmind.Application.Common.Interfaces;
 using Meetmind.Domain.Entities;
 using Meetmind.Domain.Enums;
 using Meetmind.Infrastructure.Db;
+using Meetmind.Infrastructure.Transcription;
 using Meetmind.Infrastructure.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace MeetingTests;
 
 public class TranscriptionWorkerTests
 {
     private readonly DbContextOptions<MeetMindDbContext> _options;
+    private readonly TranscriptSemanticAnalyzer transcriptSemanticAnalyzer = Substitute.For<TranscriptSemanticAnalyzer>();
 
     public TranscriptionWorkerTests()
     {
@@ -47,7 +51,7 @@ public class TranscriptionWorkerTests
         scopeFactory.CreateScope().Returns(scope);
 
         var logger = Substitute.For<ILogger<TranscriptionWorker>>();
-        var worker = new TranscriptionWorker(scopeFactory, logger);
+        var worker = new TranscriptionWorker(scopeFactory, logger, transcriptSemanticAnalyzer);
 
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
 
@@ -58,6 +62,8 @@ public class TranscriptionWorkerTests
         var updated = await db.Meetings.FirstOrDefaultAsync();
         updated!.TranscriptState.Should().Be(TranscriptState.Completed);
         updated.TranscriptPath.Should().Be("Data/Transcript/mock.txt");
+        File.Exists($"Data/Transcript/{meeting.Id}.analysis.json").Should().BeTrue();
+
     }
 
     [Fact]
@@ -86,7 +92,7 @@ public class TranscriptionWorkerTests
         scopeFactory.CreateScope().Returns(scope);
 
         var logger = Substitute.For<ILogger<TranscriptionWorker>>();
-        var worker = new TranscriptionWorker(scopeFactory, logger);
+        var worker = new TranscriptionWorker(scopeFactory, logger, transcriptSemanticAnalyzer);
 
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
 
@@ -96,5 +102,6 @@ public class TranscriptionWorkerTests
         // Assert
         var updated = await db.Meetings.FirstOrDefaultAsync();
         updated!.TranscriptState.Should().Be(TranscriptState.Failed);
+
     }
 }

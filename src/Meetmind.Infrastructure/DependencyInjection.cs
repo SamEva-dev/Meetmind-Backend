@@ -4,6 +4,7 @@ using Meetmind.Application.Common.Interfaces;
 using Meetmind.Infrastructure.Db;
 using Meetmind.Infrastructure.Hubs;
 using Meetmind.Infrastructure.Repositories;
+using Meetmind.Infrastructure.Summary;
 using Meetmind.Infrastructure.Transcription;
 using Meetmind.Infrastructure.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -23,12 +24,20 @@ namespace Meetmind.Infrastructure
                 options.UseSqlite($"Data Source={dbPath}"));
 
             services.AddSingleton<INotifier, NotifyHubNotifier>();
+            services.AddSingleton<TranscriptSemanticAnalyzer>();
+
+
             services.AddScoped<IMeetingRepository, MeetingRepository>();
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
             services.AddScoped<IWhisperService, WhisperPythonService>();
+            services.AddScoped<ISummaryService, FakeSummaryService>();
+            services.AddScoped<ISummaryService, MarkdownSummaryService>();
+
 
 
             services.AddHostedService<TranscriptionWorker>();
+            services.AddHostedService<SummaryWorker>();
+
 
 
 

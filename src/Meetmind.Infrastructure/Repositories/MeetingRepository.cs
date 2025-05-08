@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediatR;
 using Meetmind.Application.Common.Interfaces;
 using Meetmind.Application.Dtos;
 using Meetmind.Domain.Entities;
@@ -31,6 +32,25 @@ public class MeetingRepository : IMeetingRepository
                 EndUtc = m.EndUtc,
                 State = m.State
             })
+            .AsNoTracking()
             .ToListAsync(ct);
+    }
+
+    public Task<MeetingDto?> GetTranscription(Guid meetingId, CancellationToken ct)
+    {
+      return  _db.Meetings
+            .Where(m => m.Id == meetingId)
+            .Select(m => new MeetingDto
+            {
+                Id = m.Id,
+                Title = m.Title,
+                StartUtc = m.StartUtc,
+                EndUtc = m.EndUtc,
+                State = m.State,
+                TranscriptState = m.TranscriptState,
+                TranscriptPath = m.TranscriptPath
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(ct);
     }
 }

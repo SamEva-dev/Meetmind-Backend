@@ -1,6 +1,8 @@
 ﻿using Meetmind.Application.Common.Interfaces;
+using Meetmind.Domain.Entities;
 using Meetmind.Domain.Enums;
 using Meetmind.Infrastructure.Db;
+using Meetmind.Infrastructure.Transcription;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,8 +15,9 @@ public class TranscriptionWorker : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<TranscriptionWorker> _logger;
     private const int IntervalSeconds = 10;
+    private readonly TranscriptSemanticAnalyzer _analyzer;
 
-    public TranscriptionWorker(IServiceScopeFactory scopeFactory, ILogger<TranscriptionWorker> logger)
+    public TranscriptionWorker(IServiceScopeFactory scopeFactory, ILogger<TranscriptionWorker> logger, TranscriptSemanticAnalyzer analyzer)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
@@ -47,6 +50,10 @@ public class TranscriptionWorker : BackgroundService
                         await db.SaveChangesAsync(stoppingToken);
 
                         var transcriptPath = await whisper.TranscribeAsync(meeting.Id, stoppingToken);
+
+                        var path = await _analyzer.AnalyzeAsync(meeting.Id, transcriptPath, stoppingToken);
+                        _logger.LogInformation("Semantic analysis saved to {Path}", path);
+
                         meeting.MarkTranscriptionCompleted(transcriptPath);
                         await db.SaveChangesAsync(stoppingToken);
 

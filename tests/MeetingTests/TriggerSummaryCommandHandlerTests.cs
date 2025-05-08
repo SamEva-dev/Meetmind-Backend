@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Castle.Core.Logging;
 using FluentAssertions;
 using Meetmind.Application.Commands;
 using Meetmind.Application.Common.Interfaces;
@@ -14,34 +13,31 @@ using NSubstitute;
 
 namespace MeetingTests;
 
-public class TriggerTranscriptionCommandHandlerTests
+public class TriggerSummaryCommandHandlerTests
 {
     private readonly IMeetingRepository _repo = Substitute.For<IMeetingRepository>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
-    private readonly ILogger<TriggerTranscriptionCommandHandler> _log =
-        Substitute.For<ILogger<TriggerTranscriptionCommandHandler>>();
+    private readonly ILogger<TriggerSummaryCommandHandler> _logger = Substitute.For<ILogger<TriggerSummaryCommandHandler>>();
 
     [Fact]
-    public async Task Should_Queue_Transcription()
+    public async Task Should_Queue_Summary()
     {
-        var meeting = new Meeting("To transcribe", DateTime.UtcNow);
+        var meeting = new Meeting("Résumé à faire", DateTime.UtcNow);
         _repo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
 
-        var handler = new TriggerTranscriptionCommandHandler(_repo, _uow, _log);
+        var handler = new TriggerSummaryCommandHandler(_repo, _uow, _logger);
+        await handler.Handle(new TriggerSummaryCommand(meeting.Id), default);
 
-        await handler.Handle(new TriggerTranscriptionCommand(meeting.Id), default);
-
-        meeting.TranscriptState.Should().Be(TranscriptState.Queued);
+        meeting.SummaryState.Should().Be(SummaryState.Queued);
         await _uow.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Should_Throw_If_Meeting_Not_Found()
     {
-        var handler = new TriggerTranscriptionCommandHandler(_repo, _uow, _log);
+        var handler = new TriggerSummaryCommandHandler(_repo, _uow, _logger);
 
-        var act = async () => await handler.Handle(new TriggerTranscriptionCommand(Guid.NewGuid()), default);
-
+        var act = () => handler.Handle(new TriggerSummaryCommand(Guid.NewGuid()), default);
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }
 }

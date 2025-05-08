@@ -53,6 +53,8 @@ public class WhisperPythonService : IWhisperService
             throw new ApplicationException("Whisper failed: " + stderr);
         }
 
+        
+
         _logger.LogInformation("Transcription completed. Output file: {Output}", outputPath);
         return outputPath;
     }

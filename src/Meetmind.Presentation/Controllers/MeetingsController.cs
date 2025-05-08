@@ -48,4 +48,5 @@ public class MeetingsController : ControllerBase
         var result = await _sender.Send(new GetMeetingsTodayQuery());
         return Ok();
     }
+
 }

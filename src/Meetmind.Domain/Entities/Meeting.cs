@@ -13,6 +13,9 @@ public class Meeting
     public TranscriptState TranscriptState { get; private set; } = TranscriptState.NotRequested;
     public string? TranscriptPath { get; private set; }
 
+    public SummaryState SummaryState { get; private set; } = SummaryState.NotRequested;
+    public string? SummaryPath { get; private set; }
+
     public TimeSpan? Duration =>
         EndUtc.HasValue ? EndUtc.Value - StartUtc : null;
 
@@ -80,5 +83,30 @@ public class Meeting
     public void MarkTranscriptionFailed()
     {
         TranscriptState = TranscriptState.Failed;
+    }
+
+    public void QueueSummary()
+    {
+        if (SummaryState != SummaryState.NotRequested)
+            throw new InvalidOperationException("Summary already requested.");
+        SummaryState = SummaryState.Queued;
+    }
+
+    public void MarkSummaryProcessing()
+    {
+        if (SummaryState != SummaryState.Queued)
+            throw new InvalidOperationException("Must be queued before processing.");
+        SummaryState = SummaryState.Processing;
+    }
+
+    public void MarkSummaryCompleted(string path)
+    {
+        SummaryState = SummaryState.Completed;
+        SummaryPath = path;
+    }
+
+    public void MarkSummaryFailed()
+    {
+        SummaryState = SummaryState.Failed;
     }
 }

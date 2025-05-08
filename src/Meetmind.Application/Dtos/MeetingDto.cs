@@ -14,4 +14,6 @@ public class MeetingDto
     public DateTime StartUtc { get; set; }
     public DateTime? EndUtc { get; set; }
     public MeetingState State { get; set; }
+    public TranscriptState TranscriptState { get; set; }
+    public string? TranscriptPath { get; set; }
 }
