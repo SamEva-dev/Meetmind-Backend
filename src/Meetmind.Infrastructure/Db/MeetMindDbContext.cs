@@ -11,6 +11,8 @@ namespace Meetmind.Infrastructure.Db;
 public class MeetMindDbContext : DbContext
 {
     public DbSet<Meeting> Meetings => Set<Meeting>();
+    public DbSet<UserSettingsEntity> UserSettings => Set<UserSettingsEntity>();
+
 
     public MeetMindDbContext(DbContextOptions<MeetMindDbContext> options)
         : base(options)

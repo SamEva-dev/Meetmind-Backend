@@ -6,6 +6,7 @@ using Meetmind.Domain.ValueObjects;
 using Meetmind.Infrastructure.Orchestration;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using FluentAssertions;
 
 namespace MeetingTests.Orchestrator;
 

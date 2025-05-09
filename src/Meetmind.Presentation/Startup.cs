@@ -29,12 +29,7 @@ namespace Meetmind.Presentation
                 o.GroupNameFormat = "'v'VVV";
                 o.SubstituteApiVersionInUrl = true;
             });
-            services.AddAutoMapper((serviceProvider, cfg) =>
-            {
-                //  cfg.AddExpressionMapping();
-                // cfg.AddCollectionMappers();
-                //cfg.AddProfile<PresentationMappingProfile>();
-            }, new System.Reflection.Assembly[0]);
+           
             services.AddEndpointsApiExplorer();
 
             services.AddMediatR(cfg =>

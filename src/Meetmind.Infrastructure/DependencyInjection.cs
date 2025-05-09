@@ -4,6 +4,7 @@ using Meetmind.Application.Common.Interfaces;
 using Meetmind.Infrastructure.Calendar;
 using Meetmind.Infrastructure.Db;
 using Meetmind.Infrastructure.Hubs;
+using Meetmind.Infrastructure.Mapping;
 using Meetmind.Infrastructure.Orchestration;
 using Meetmind.Infrastructure.Realtime;
 using Meetmind.Infrastructure.Repositories;
@@ -27,6 +28,14 @@ namespace Meetmind.Infrastructure
             services.AddDbContext<MeetMindDbContext>(options =>
                 options.UseSqlite($"Data Source={dbPath}"));
 
+           // services.AddAutoMapper(typeof(UserSettingsProfile));
+            services.AddAutoMapper((serviceProvider, cfg) =>
+            {
+                //  cfg.AddExpressionMapping();
+                // cfg.AddCollectionMappers();
+                cfg.AddProfile<UserSettingsProfile>();
+            }, new System.Reflection.Assembly[0]);
+
             services.AddSingleton<INotifier, NotifyHubNotifier>();
             services.AddSingleton<TranscriptSemanticAnalyzer>();
             services.AddSingleton<INotificationService, SignalRNotificationService>();
@@ -41,6 +50,8 @@ namespace Meetmind.Infrastructure
             services.AddScoped<ISummaryService, MarkdownSummaryService>();
             services.AddScoped<ISearchService, SearchIndexService>();
             services.AddScoped<ICalendarService, FakeCalendarService>();
+            services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
+
 
 
 
