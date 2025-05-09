@@ -26,6 +26,11 @@ public class SearchIndexService : ISearchService
                 var root = JsonDocument.Parse(json).RootElement;
                 var meetingId = root.GetProperty("meetingId").GetGuid();
 
+                var dateUtc = root.TryGetProperty("dateUtc", out var dateJson)
+                        ? dateJson.GetDateTime()
+                        : File.GetCreationTimeUtc(file);
+
+
                 // Index keywords
                 foreach (var keyword in root.GetProperty("keywords").EnumerateArray())
                 {
@@ -34,7 +39,8 @@ public class SearchIndexService : ISearchService
                         MeetingId = meetingId,
                         MatchType = "keyword",
                         Snippet = keyword.GetString() ?? "",
-                        Score = 1.5
+                        Score = 1.5,
+                        DateUtc = dateUtc
                     });
                 }
 
@@ -48,7 +54,8 @@ public class SearchIndexService : ISearchService
                             MeetingId = meetingId,
                             MatchType = "participant",
                             Snippet = label,
-                            Score = 1.0
+                            Score = 1.0,
+                            DateUtc = dateUtc
                         });
                 }
 
@@ -60,7 +67,8 @@ public class SearchIndexService : ISearchService
                         MeetingId = meetingId,
                         MatchType = "timeline",
                         Snippet = entry.GetProperty("text").GetString() ?? "",
-                        Score = 0.9
+                        Score = 0.9,
+                        DateUtc = dateUtc
                     });
                 }
             }
@@ -75,10 +83,12 @@ public class SearchIndexService : ISearchService
     {
         var q = query.ToLowerInvariant();
         var results = _index
-            .Where(e => e.Snippet.ToLowerInvariant().Contains(q))
-            .OrderByDescending(e => e.Score)
-            .Take(50)
-            .ToList();
+       .Where(e => e.Snippet.ToLowerInvariant().Contains(q))
+       .Where(e => from == null || e.DateUtc >= from.Value.Date)
+       .Where(e => to == null || e.DateUtc <= to.Value.Date)
+       .OrderByDescending(e => e.Score)
+       .Take(50)
+       .ToList();
 
         return Task.FromResult(results);
     }

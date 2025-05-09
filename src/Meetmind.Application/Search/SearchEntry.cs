@@ -7,4 +7,5 @@ public record SearchEntry
     public string MatchType { get; init; } = "";
     public string Snippet { get; init; } = "";
     public double Score { get; init; } = 1.0;
+    public DateTime DateUtc { get; init; }
 }

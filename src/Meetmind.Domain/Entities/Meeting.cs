@@ -2,7 +2,7 @@
 
 namespace Meetmind.Domain.Entities;
 
-public class Meeting
+public sealed class Meeting
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public string Title { get; private set; }

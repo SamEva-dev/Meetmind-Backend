@@ -1,9 +1,13 @@
 ﻿
 
 using Meetmind.Application.Common.Interfaces;
+using Meetmind.Infrastructure.Calendar;
 using Meetmind.Infrastructure.Db;
 using Meetmind.Infrastructure.Hubs;
+using Meetmind.Infrastructure.Orchestration;
+using Meetmind.Infrastructure.Realtime;
 using Meetmind.Infrastructure.Repositories;
+using Meetmind.Infrastructure.Search;
 using Meetmind.Infrastructure.Summary;
 using Meetmind.Infrastructure.Transcription;
 using Meetmind.Infrastructure.Worker;
@@ -25,6 +29,9 @@ namespace Meetmind.Infrastructure
 
             services.AddSingleton<INotifier, NotifyHubNotifier>();
             services.AddSingleton<TranscriptSemanticAnalyzer>();
+            services.AddSingleton<INotificationService, SignalRNotificationService>();
+            services.AddSingleton<IMeetingOrchestratorManager, MeetingOrchestratorManager>();
+
 
 
             services.AddScoped<IMeetingRepository, MeetingRepository>();
@@ -32,11 +39,15 @@ namespace Meetmind.Infrastructure
             services.AddScoped<IWhisperService, WhisperPythonService>();
             services.AddScoped<ISummaryService, FakeSummaryService>();
             services.AddScoped<ISummaryService, MarkdownSummaryService>();
+            services.AddScoped<ISearchService, SearchIndexService>();
+            services.AddScoped<ICalendarService, FakeCalendarService>();
 
 
 
             services.AddHostedService<TranscriptionWorker>();
             services.AddHostedService<SummaryWorker>();
+            services.AddHostedService<MeetingSchedulerWorker>();
+
 
 
 

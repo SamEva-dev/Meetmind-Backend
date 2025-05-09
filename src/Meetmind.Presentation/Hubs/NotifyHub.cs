@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Meetmind.Application.Common.Interfaces;
+using Meetmind.Domain.Models.Realtime;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Meetmind.Presentation.Hubs;
@@ -6,15 +8,20 @@ namespace Meetmind.Presentation.Hubs;
 //[Authorize]
 public class NotifyHub : Hub
 {
-    public override Task OnConnectedAsync()
+    private readonly ILogger<NotifyHub> _logger;
+    private readonly IMeetingOrchestratorManager _orchestratorManager;
+
+    public NotifyHub(ILogger<NotifyHub> logger, IMeetingOrchestratorManager orchestratorManager)
     {
-        Console.WriteLine($"Client connected: {Context.ConnectionId}");
-        return base.OnConnectedAsync();
+        _logger = logger;
+        _orchestratorManager = orchestratorManager;
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public async Task ConfirmAction(ConfirmActionMessage message)
     {
-        Console.WriteLine($"Client disconnected: {Context.ConnectionId}");
-        return base.OnDisconnectedAsync(exception);
+        _logger.LogInformation("SignalR: ConfirmAction received for Meeting {Id}, Action: {Action}, Accepted: {Accepted}",
+            message.MeetingId, message.Action, message.Accepted);
+
+        await _orchestratorManager.HandleConfirmationAsync(message, CancellationToken.None);
     }
 }
