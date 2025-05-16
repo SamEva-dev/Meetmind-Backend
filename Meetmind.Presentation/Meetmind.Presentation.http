@@ -1,0 +1,6 @@
+@Meetmind.Presentation_HostAddress = http://localhost:5240
+
+GET {{Meetmind.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

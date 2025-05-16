@@ -1,15 +1,16 @@
 ﻿using Meetmind.Infrastructure;
-using Meetmind.Infrastructure.Db;
 using Meetmind.Presentation;
+using Meetmind.Application;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using SerilogTracing;
+using Meetmind.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 var configurationBuilder = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
@@ -23,6 +24,11 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithProperty("MachineName", Environment.MachineName)
     .WriteTo.Console()
     .ReadFrom.Configuration(configuration)
+    .Filter.ByExcluding(evt =>
+        evt.Properties.ContainsKey("transcriptPath") ||
+        evt.Properties.ContainsKey("audioPath") ||
+        evt.Properties.ContainsKey("summaryPath")
+    )
     .CreateLogger();
 
 using var listener = new ActivityListenerConfiguration()
@@ -41,7 +47,7 @@ var host = Host.CreateDefaultBuilder(args)
                 {
                     throw new InvalidOperationException("Configuration not initialized");
                 }
-
+                services.AddApplication();
                 services.AddInfrastructure(configuration);
             })
             .ConfigureLogging(logger =>
@@ -52,32 +58,32 @@ var host = Host.CreateDefaultBuilder(args)
             })
             .ConfigureWebHostDefaults(webBuilder =>
             {
-               webBuilder.UseStartup<Startup>();
+                webBuilder.UseStartup<Startup>();
             })
             .UseSerilog()
             .Build();
 
-           
-                using (var scope = host.Services.CreateScope())
+
+            using (var scope = host.Services.CreateScope())
+            {
+                try
                 {
-                    try
-                    {
-                        var context = scope.ServiceProvider.GetRequiredService<MeetMindDbContext>();
-                        Console.WriteLine("Applying migrations...");
-                        context.Database.Migrate();
+                    var context = scope.ServiceProvider.GetRequiredService<MeetMindDbContext>();
+                    Console.WriteLine("Applying migrations...");
+                    context.Database.Migrate();
 
-                        var pendingMigrations = context.Database.GetPendingMigrations();
+                    var pendingMigrations = context.Database.GetPendingMigrations();
 
-                        if (pendingMigrations.Any())
-                        {
-                            Console.WriteLine($"Current database migration version: {pendingMigrations.Last()}");
-                            Console.WriteLine("Migrations applied successfully.");
-                        }
-                    }
-                    catch (Exception ex)
+                    if (pendingMigrations.Any())
                     {
-                        Console.WriteLine($"{ex.Message}");
+                        Console.WriteLine($"Current database migration version: {pendingMigrations.Last()}");
+                        Console.WriteLine("Migrations applied successfully.");
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{ex.Message}");
+                }
+            }
 
 host.Run();
