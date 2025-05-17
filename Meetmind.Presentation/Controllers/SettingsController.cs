@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using MediatR;
+﻿using MediatR;
 using Meetmind.Application.Command.Settings;
 using Meetmind.Application.QueryHandles.Settings;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Meetmind.Presentation.Controllers

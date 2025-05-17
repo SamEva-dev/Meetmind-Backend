@@ -9,17 +9,33 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="14.0.0" />
     <PackageReference Include="AutoMapper.Collection" Version="11.0.0" />
+    <PackageReference Include="Azure.Identity" Version="1.14.0" />
+    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.69.0.3746" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Graph.Core" Version="3.2.4" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.72.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Meetmind.Application\Meetmind.Application.csproj" />
     <ProjectReference Include="..\Meetmind.Domain\Meetmind.Domain.csproj" />
     <ProjectReference Include="..\Meetmind.Presentation\Meetmind.Presentation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\google-credentials.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\outlook-credentials.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\outlook-token.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

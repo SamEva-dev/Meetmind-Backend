@@ -20,17 +20,6 @@ namespace Meetmind.Infrastructure.Repositories
 
         public async Task SaveAsync(SettingsEntity existingSettings, CancellationToken cancellationToken)
         {
-            //var existing = await _dbContext.Settings.FirstOrDefaultAsync(cancellationToken);
-
-            //if (existing is null)
-            //{
-            //    _dbContext.Settings.Add(existingSettings);
-            //}
-            //else
-            //{
-            //    _dbContext.Entry(existing).CurrentValues.SetValues(existingSettings);
-            //}
-
             _dbContext.Settings.Add(existingSettings);
 
         }

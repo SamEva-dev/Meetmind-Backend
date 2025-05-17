@@ -8,10 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.69.0.3746" />
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Graph" Version="5.78.0" />
     <PackageReference Include="Serilog" Version="4.2.0" />
   </ItemGroup>
 
@@ -20,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Command\Calendar\" />
     <Folder Include="Hubs\" />
   </ItemGroup>
 
