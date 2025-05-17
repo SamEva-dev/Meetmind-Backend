@@ -3,6 +3,7 @@ using System;
 using Meetmind.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Meetmind.Infrastructure.Migrations
 {
     [DbContext(typeof(MeetMindDbContext))]
-    partial class MeetMindDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250517134220_addcolumngoogleandoutlookonsetting")]
+    partial class addcolumngoogleandoutlookonsetting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -56,10 +59,6 @@ namespace Meetmind.Infrastructure.Migrations
 
                     b.Property<int>("TranscriptState")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("source")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

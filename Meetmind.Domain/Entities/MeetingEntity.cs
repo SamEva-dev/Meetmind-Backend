@@ -35,7 +35,7 @@ public class MeetingEntity : AggregateRoot
     public MeetingEntity(string title, DateTime startUtc, string externalId, string source) : this(title, startUtc)
     {
         ExternalId = externalId;
-        this.source = source;
+        ExternalSource = source;
     }
 
     public void Start()

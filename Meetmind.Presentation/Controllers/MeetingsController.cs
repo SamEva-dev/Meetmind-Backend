@@ -1,11 +1,12 @@
 ﻿using MediatR;
+using Meetmind.Application.Command.Meetings;
 using Meetmind.Application.Dto;
 using Meetmind.Application.QueryHandles.Mettings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Meetmind.Presentation.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("v1/[controller]")]
     [ApiController]
     public class MeetingsController : ControllerBase
     {
@@ -39,7 +40,7 @@ namespace Meetmind.Presentation.Controllers
             }
             finally
             {
-                _logger.LogInformation("Finished GetById"); 
+                _logger.LogInformation("Finished GetById");
             }
 
         }
@@ -57,9 +58,9 @@ namespace Meetmind.Presentation.Controllers
                 _logger.LogWarning("No meetings found for today");
                 return NotFound("Meeting not found  for today");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogError("Error occurred while getting today's meetings");
+                _logger.LogError(ex, "Error occurred while getting today's meetings");
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
             }
             finally
@@ -67,6 +68,30 @@ namespace Meetmind.Presentation.Controllers
                 _logger.LogInformation("Finished GetToday");
             }
 
+        }
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("Delete meeting with id {Id}", id);
+                var result = await _mediator.Send(new DeleteMeetingCommand(id));
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                _logger.LogWarning("Meeting with id {Id} not found", id);
+                return NotFound("Meeting not found.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while deleting meeting with id {Id}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
+            }
+            finally
+            {
+                _logger.LogInformation("Finished Delete");
+            }
         }
     }
 }

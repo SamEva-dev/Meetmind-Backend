@@ -27,6 +27,7 @@ namespace Meetmind.Infrastructure
             {
                 //  cfg.AddExpressionMapping();
                 // cfg.AddCollectionMappers();
+                cfg.AddProfile<MeetingProfile>();   
                 cfg.AddProfile<SettingsProfile>();
                 cfg.AddProfile<CalendarSyncLogProfile>();
             }, new System.Reflection.Assembly[0]);

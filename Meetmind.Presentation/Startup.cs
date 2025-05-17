@@ -93,6 +93,7 @@ namespace Meetmind.Presentation
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<SettingsHub>("/hubs/settings");
+                endpoints.MapHub<MeetingHub>("/hubs/meeting");
             });
             // #endif
         }

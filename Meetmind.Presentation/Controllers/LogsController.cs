@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meetmind.Presentation.Controllers
 {
-    [Route("api/sync/[controller]")]
+    [Route("v1/sync/[controller]")]
     [ApiController]
     public class LogsController : ControllerBase
     {

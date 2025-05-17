@@ -22,6 +22,7 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
     private readonly IHubContext<MeetingHub> _hub;
     private readonly MeetMindDbContext _db;
     private readonly ILogger<MeetingCreatorService> _logger;
+    
 
     public MeetingCreatorService(
         IEnumerable<ICalendarConnector> calendarConnectors,
@@ -42,7 +43,9 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
         try
         {
             var allMeetings = new List<CalendarMeetingDto>();
-
+            var setting = await _db.Settings
+              .AsNoTracking()
+              .FirstOrDefaultAsync(token);
             foreach (var connector in _calendarConnectors)
             {
                 try
@@ -86,9 +89,10 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
     public async Task<bool> CreateMeetingIfNotExistsAsync(CalendarMeetingDto dto, CancellationToken token)
     {
         var exists = await _db.Meetings
+            .AsNoTracking()
             .AnyAsync(m => m.ExternalId == dto.ExternalId && m.ExternalSource == dto.Source, token);
 
-        if (exists) return false;
+        if (exists) return true;
 
         var meeting = new MeetingEntity(dto.Title, dto.StartUtc, dto.ExternalId, dto.Source);
         _db.Meetings.Add(meeting);

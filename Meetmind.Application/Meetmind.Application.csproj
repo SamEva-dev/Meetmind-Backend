@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="Command\Calendar\" />
+    <Folder Include="Command\NewFolder\" />
     <Folder Include="Hubs\" />
   </ItemGroup>
 

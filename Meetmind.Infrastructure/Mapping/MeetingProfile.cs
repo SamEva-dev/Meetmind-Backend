@@ -9,5 +9,7 @@ public class MeetingProfile : Profile
     public MeetingProfile()
     {
         CreateMap<MeetingEntity, MeetingDto>();
+
+        CreateMap<MeetingDto, MeetingEntity>();
     }
 }

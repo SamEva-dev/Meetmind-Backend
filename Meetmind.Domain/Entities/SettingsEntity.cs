@@ -16,6 +16,8 @@ public sealed class SettingsEntity : AggregateRoot
     public int NotifyBeforeMinutes { get; set; }
     public int NotificationRepeatInterval { get; set; }
     public bool RequireConsent { get; set; } = true;
+    public bool UseGoogleCalendar { get; set; }
+    public bool UseOutlookCalendar { get; set; }
     public int RetentionDays { get; set; }
 
 }

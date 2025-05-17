@@ -12,5 +12,7 @@ namespace Meetmind.Application.Dto
         public int NotificationRepeatInterval { get; set; }
         public bool RequireConsent { get; set; } = true;
         public int RetentionDays { get; set; }
+        public bool UseGoogleCalendar { get; set; }
+        public bool UseOutlookCalendar { get; set; }
     }
 }

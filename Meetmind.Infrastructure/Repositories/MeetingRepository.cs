@@ -3,6 +3,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
+using Meetmind.Domain.Entities;
 using Meetmind.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,7 @@ public class MeetingRepository : IMeetingRepository
         _dbContext = dbContext;
         _mapper = mapper;
     }
-
+    
     public Task<MeetingDto?> GetMeetingById(Guid id, CancellationToken cancellationToken)
     {
         return _dbContext.Meetings
@@ -35,5 +36,21 @@ public class MeetingRepository : IMeetingRepository
             .Where(m => m.StartUtc.Date == today)
             .ProjectTo<MeetingDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(MeetingDto meeting, CancellationToken cancellationToken)
+    {
+        _dbContext.Meetings.Remove(_mapper.Map<MeetingEntity>(meeting));
+        await Task.CompletedTask;
+    }
+
+    public async Task ApplyAsync(CancellationToken cancellationToken)
+    {
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public void Dispose()
+    {
+        _dbContext.Dispose();
     }
 }
