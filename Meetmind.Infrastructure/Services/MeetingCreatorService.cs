@@ -94,7 +94,7 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
 
         if (exists) return true;
 
-        var meeting = new MeetingEntity(dto.Title, dto.StartUtc, dto.ExternalId, dto.Source);
+        var meeting = new MeetingEntity(dto.Title, dto.Start, dto.End, dto.ExternalId, dto.Source);
         _db.Meetings.Add(meeting);
 
         // projection read model
@@ -104,6 +104,8 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
             Title = meeting.Title,
             StartUtc = meeting.StartUtc,
             EndUtc = meeting.EndUtc,
+            Start = meeting.Start,
+            End = meeting.End,
             State = meeting.State.ToString(),
             TranscriptPath = null,
             SummaryPath = null,

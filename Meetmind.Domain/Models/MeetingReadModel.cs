@@ -7,6 +7,8 @@ public sealed class MeetingReadModel
     public string Title { get; set; } = default!;
     public DateTime StartUtc { get; set; }
     public DateTime? EndUtc { get; set; }
+    public DateTime Start { get;  set; }
+    public DateTime? End { get;  set; }
     public string State { get; set; } = default!;
     public string? TranscriptPath { get; set; }
     public string? SummaryPath { get; set; }

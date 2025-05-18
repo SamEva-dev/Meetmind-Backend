@@ -66,8 +66,8 @@ public sealed class OutlookCalendarConnector : ICalendarConnector
                 ExternalId = ev.Id,
                 Source = "Outlook",
                 Title = ev.Subject ?? "(Sans titre)",
-                StartUtc = DateTime.Parse(ev.Start.DateTime).ToUniversalTime(),
-                EndUtc = ev.End?.DateTime != null ? DateTime.Parse(ev.End.DateTime).ToUniversalTime() : null,
+                Start = DateTime.Parse(ev.Start.DateTime),
+                End = ev.End?.DateTime != null ? DateTime.Parse(ev.End.DateTime) : null,
                 OrganizerEmail = ev.Organizer?.EmailAddress?.Address,
                 AttendeesEmails = ev.Attendees?
                     .Select(a => a.EmailAddress?.Address)

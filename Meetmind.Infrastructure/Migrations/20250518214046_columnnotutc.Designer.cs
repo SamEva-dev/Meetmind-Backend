@@ -3,6 +3,7 @@ using System;
 using Meetmind.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Meetmind.Infrastructure.Migrations
 {
     [DbContext(typeof(MeetMindDbContext))]
-    partial class MeetMindDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250518214046_columnnotutc")]
+    partial class columnnotutc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -81,16 +84,7 @@ namespace Meetmind.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("AutoCancelMeeting")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("AutoDeleteMeeting")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("AutoStartRecord")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("AutoStopRecord")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("AutoSummarize")

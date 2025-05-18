@@ -51,8 +51,8 @@ public sealed class GoogleCalendarConnector : ICalendarConnector
                 ExternalId = ev.Id,
                 Source = Source,
                 Title = ev.Summary ?? "(Sans titre)",
-                StartUtc = ev.Start.DateTime.Value.ToUniversalTime(),
-                EndUtc = ev.End?.DateTime?.ToUniversalTime(),
+                Start = ev.Start.DateTime.Value,
+                End= ev.End?.DateTime,
                 OrganizerEmail = ev.Organizer?.Email,
                 AttendeesEmails = ev.Attendees?.Select(a => a.Email).Where(e => !string.IsNullOrEmpty(e)).ToList()
             });

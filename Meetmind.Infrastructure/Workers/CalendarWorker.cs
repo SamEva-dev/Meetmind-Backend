@@ -53,12 +53,10 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
                     var created = await meetingCreator.CreateMeetingIfNotExistsAsync(calendarMeeting, stoppingToken);
                     if (created)
                     {
-                        // notifier immédiatement le frontend de la nouvelle réunion
                         await meetingCreator.NotifyMeetingCreatedAsync(calendarMeeting);
                     }
                 }
 
-                // Gérer les alertes à 10min / 5min / toutes les 1min
                 await meetingCreator.NotifyImminentMeetingsAsync(stoppingToken);
                 await ProcessAutoRecordingAsync(stoppingToken);
             }
@@ -103,6 +101,13 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
 
     private async Task ProcessAutoStopAsync(MeetMindDbContext dbContext, CancellationToken ct)
     {
+        var settings = await dbContext.Settings
+       .AsNoTracking()
+               .FirstOrDefaultAsync(ct);
+
+        if (!settings.AutoStopRecord)
+            return;
+
         var now = _clock.UtcNow;
 
         var meetingsToStop = await dbContext.Meetings
@@ -121,11 +126,20 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
 
     private async Task CancelDeletedOrRemoteCancelledMeetingsAsync(MeetMindDbContext dbContext, CancellationToken ct)
     {
+        var settings = await dbContext.Settings
+      .AsNoTracking()
+              .FirstOrDefaultAsync(ct);
+
+        if (!settings.AutoCancelMeeting)
+            return;
+
         var meetings = await dbContext.Meetings
-       .Where(m => !m.IsCancelled && m.ExternalId != null)
-       .ToListAsync(ct);
+                                .Where(m => !m.IsCancelled && m.ExternalId != null)
+                                 .ToListAsync(ct);
+
         using var scope = _scopeFactory.CreateScope();
         var _calendarConnectors = scope.ServiceProvider.GetRequiredService<IEnumerable<ICalendarConnector>>();
+
         foreach (var meeting in meetings)
         {
             var connector = _calendarConnectors.FirstOrDefault(c => c.Source == meeting.ExternalSource);
@@ -144,6 +158,13 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
 
     private async Task DetectAndHandleGhostMeetingsAsync(MeetMindDbContext dbContext, CancellationToken ct)
     {
+        var settings = await dbContext.Settings
+      .AsNoTracking()
+              .FirstOrDefaultAsync(ct);
+
+        if (!settings.AutoDeleteMeeting)
+            return;
+
         var now = _clock.UtcNow;
 
         var ghostMeetings = await dbContext.Meetings

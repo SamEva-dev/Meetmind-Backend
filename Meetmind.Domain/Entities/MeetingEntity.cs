@@ -13,6 +13,10 @@ public class MeetingEntity : AggregateRoot
     public string? ExternalSource { get; private set; }
     public DateTime StartUtc { get;  set; }
     public DateTime? EndUtc { get; private set; }
+
+    public DateTime Start { get; private set; }
+    public DateTime? End { get; private set; }
+
     public MeetingState State { get; private set; } = MeetingState.Pending;
 
     public TranscriptState TranscriptState { get; private set; } = TranscriptState.NotRequested;
@@ -27,14 +31,17 @@ public class MeetingEntity : AggregateRoot
 
     private MeetingEntity() { }
 
-    public MeetingEntity(string title, DateTime startUtc)
+    public MeetingEntity(string title, DateTime start, DateTime? ends)
     {
         if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Title is required.");
         Title = title;
-        StartUtc = startUtc;
+        Start = start;
+        End = ends; 
+        StartUtc = start.ToUniversalTime();
+        EndUtc = ends?.ToUniversalTime();
     }
 
-    public MeetingEntity(string title, DateTime startUtc, string externalId, string source) : this(title, startUtc)
+    public MeetingEntity(string title, DateTime start, DateTime? end, string externalId, string source) : this(title, start, end)
     {
         ExternalId = externalId;
         ExternalSource = source;
