@@ -1,4 +1,5 @@
 ﻿using Meetmind.Domain.Enums;
+using Meetmind.Domain.Events;
 using Meetmind.Domain.Units;
 
 namespace Meetmind.Domain.Entities;
@@ -19,6 +20,7 @@ public class MeetingEntity : AggregateRoot
 
     public SummaryState SummaryState { get; private set; } = SummaryState.NotRequested;
     public string? SummaryPath { get; private set; }
+    public bool IsCancelled { get; private set; }
 
     public TimeSpan? Duration =>
         EndUtc.HasValue ? EndUtc.Value - StartUtc : null;
@@ -38,33 +40,37 @@ public class MeetingEntity : AggregateRoot
         ExternalSource = source;
     }
 
-    public void Start()
+    public void StartRecording()
     {
         if (State != MeetingState.Pending)
             throw new InvalidOperationException("Meeting already started.");
         State = MeetingState.Recording;
+        AddDomainEvent(new MeetingStartedDomainEvent(Id));
     }
 
-    public void Pause()
+    public void PauseRecording()
     {
         if (State != MeetingState.Recording)
             throw new InvalidOperationException("Cannot pause unless recording.");
         State = MeetingState.Paused;
+        AddDomainEvent(new MeetingPausedDomainEvent(Id));
     }
 
-    public void Resume()
+    public void ResumeRecording()
     {
         if (State != MeetingState.Paused)
             throw new InvalidOperationException("Can only resume from pause.");
         State = MeetingState.Recording;
+        AddDomainEvent(new MeetingResumedDomainEvent(Id));
     }
 
-    public void Stop(DateTime endUtc)
+    public void StopRecording(DateTime endUtc)
     {
         if (State is not MeetingState.Recording and not MeetingState.Paused)
             throw new InvalidOperationException("Can only stop active meeting.");
         EndUtc = endUtc;
         State = MeetingState.Done;
+        AddDomainEvent(new MeetingStoppedDomainEvent(Id));
     }
 
     public void QueueTranscription()
@@ -119,4 +125,14 @@ public class MeetingEntity : AggregateRoot
     {
         SummaryState = SummaryState.Failed;
     }
+
+    public void Cancel()
+    {
+        if (IsCancelled || State == MeetingState.Done)
+            return;
+
+        IsCancelled = true;
+        State = MeetingState.Cancelled;
+    }
+
 }

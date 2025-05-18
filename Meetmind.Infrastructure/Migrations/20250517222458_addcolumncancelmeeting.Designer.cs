@@ -3,6 +3,7 @@ using System;
 using Meetmind.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Meetmind.Infrastructure.Migrations
 {
     [DbContext(typeof(MeetMindDbContext))]
-    partial class MeetMindDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250517222458_addcolumncancelmeeting")]
+    partial class addcolumncancelmeeting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");

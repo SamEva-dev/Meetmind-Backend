@@ -4,6 +4,7 @@ using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
 using Meetmind.Domain.Entities;
+using Meetmind.Domain.Events.Interface;
 using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Application.Command.Settings
@@ -14,16 +15,17 @@ namespace Meetmind.Application.Command.Settings
         private readonly ILogger<SettingsHandler> _logger;
         private readonly IMapper _mapper;
         private readonly INotificationService _notification;
-        public SettingsHandler(ISettingsRepository settingsRepository,
-            INotificationService notification,
-            IMapper mapper, ILogger<SettingsHandler> logger)
+        private readonly IUnitOfWork _uow;
+
+        public SettingsHandler(ISettingsRepository settingsRepository, ILogger<SettingsHandler> logger, IMapper mapper, INotificationService notification, IUnitOfWork uow)
         {
             _settingsRepository = settingsRepository;
-            _mapper = mapper;
             _logger = logger;
+            _mapper = mapper;
             _notification = notification;
+            _uow = uow;
         }
-       
+
         public async Task<SettingsDto> Handle(SettingsCommand request, CancellationToken cancellationToken)
         {
            var settingEntity = _mapper.Map<SettingsEntity>(request);
@@ -32,12 +34,11 @@ namespace Meetmind.Application.Command.Settings
             // Create new settings
             await _settingsRepository.DeleteAsync(cancellationToken);
             await _settingsRepository.SaveAsync(settingEntity, cancellationToken);
-            await _settingsRepository.ApplyAsync(cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
-            var dto = _mapper.Map<SettingsDto>(settingEntity);
-            await _notification.NotifySettingsUpdatedAsync(dto);
+            await _notification.NotifySettingsUpdatedAsync(settingEntity);
 
-            return dto;
+            return _mapper.Map<SettingsDto>(settingEntity);
         }
     }
 }

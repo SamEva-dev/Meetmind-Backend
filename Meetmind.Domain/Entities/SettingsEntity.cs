@@ -1,5 +1,4 @@
-﻿using System;
-using Meetmind.Domain.Units;
+﻿using Meetmind.Domain.Units;
 
 namespace Meetmind.Domain.Entities;
 

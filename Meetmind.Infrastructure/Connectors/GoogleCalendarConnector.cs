@@ -9,18 +9,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Infrastructure.Connectors;
 
-
 public sealed class GoogleCalendarConnector : ICalendarConnector
 {
     private readonly IDateTimeProvider _clock;
     private readonly ILogger<GoogleCalendarConnector> _logger;
-    private const string TokenPath = "google-token.json";
 
     public GoogleCalendarConnector(IDateTimeProvider clock, ILogger<GoogleCalendarConnector> logger)
     {
         _clock = clock;
         _logger = logger;
     }
+
+    public string Source => "Google";
 
     public async Task<List<CalendarMeetingDto>> GetTodayMeetingsAsync(CancellationToken cancellationToken)
     {
@@ -49,7 +49,7 @@ public sealed class GoogleCalendarConnector : ICalendarConnector
             result.Add(new CalendarMeetingDto
             {
                 ExternalId = ev.Id,
-                Source = "Google",
+                Source = Source,
                 Title = ev.Summary ?? "(Sans titre)",
                 StartUtc = ev.Start.DateTime.Value.ToUniversalTime(),
                 EndUtc = ev.End?.DateTime?.ToUniversalTime(),
@@ -75,9 +75,9 @@ public sealed class GoogleCalendarConnector : ICalendarConnector
         var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
             clientSecrets,
             new[] { CalendarService.Scope.CalendarReadonly },
-            "default_user", // ID local
+            "default_user",
             cancellationToken,
-            new FileDataStore("GoogleOAuthToken", true) // Persiste `google-token.json` dans un sous-dossier
+            new FileDataStore("GoogleOAuthToken", true)
         );
 
         return new CalendarService(new BaseClientService.Initializer
@@ -87,8 +87,19 @@ public sealed class GoogleCalendarConnector : ICalendarConnector
         });
     }
 
-    public Task NotifyConfirmAccesAsync(object dto, CancellationToken token)
+    public async Task<bool> IsCancelledAsync(string externalId, CancellationToken token)
     {
-        throw new NotImplementedException();
+        var service = await GetCalendarServiceAsync(token);
+        try
+        {
+            var calendarId = "primary";
+            var ev = await service.Events.Get(calendarId, externalId).ExecuteAsync(token);
+
+            return ev.Status?.ToLower() == "cancelled";
+        }
+        catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return true;
+        }
     }
 }

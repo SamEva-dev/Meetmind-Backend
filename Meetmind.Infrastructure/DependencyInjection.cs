@@ -1,8 +1,10 @@
 ﻿using Meetmind.Application.Connectors;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Domain.Events.Interface;
 using Meetmind.Infrastructure.Connectors;
 using Meetmind.Infrastructure.Database;
+using Meetmind.Infrastructure.Events;
 using Meetmind.Infrastructure.Hubs;
 using Meetmind.Infrastructure.Mapping;
 using Meetmind.Infrastructure.Repositories;
@@ -43,7 +45,9 @@ namespace Meetmind.Infrastructure
             services.AddScoped<ICalendarConnector, GoogleCalendarConnector>();
             services.AddScoped<ICalendarSyncLogRepository, CalendarSyncLog>();
             services.AddScoped<IMeetingRepository, MeetingRepository>();
-
+            services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IOutlookTokenService, OutlookTokenService>();
 
             return services;
         }

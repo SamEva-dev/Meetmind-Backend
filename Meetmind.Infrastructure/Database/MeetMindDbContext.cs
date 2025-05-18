@@ -1,13 +1,35 @@
 ﻿using System.Reflection.Emit;
 using Meetmind.Domain.Entities;
 using Meetmind.Domain.Models;
+using Meetmind.Domain.Units;
+using Meetmind.Infrastructure.Events;
 using Microsoft.EntityFrameworkCore;
 
 namespace Meetmind.Infrastructure.Database
 {
     public class MeetMindDbContext : DbContext
     {
-        //public DbSet<Meeting> Meetings => Set<Meeting>();
+        private readonly IDomainEventDispatcher _dispatcher;
+
+        public MeetMindDbContext(DbContextOptions<MeetMindDbContext> options,
+                                 IDomainEventDispatcher dispatcher)
+            : base(options)
+        {
+            _dispatcher = dispatcher;
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var domainEntities = ChangeTracker
+                .Entries<AggregateRoot>()
+                .Where(e => e.Entity.DomainEvents.Any())
+                .Select(e => e.Entity)
+                .ToList();
+
+            await _dispatcher.DispatchEventsAsync(domainEntities);
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
         public DbSet<SettingsEntity> Settings => Set<SettingsEntity>();
         public DbSet<MeetingEntity> Meetings => Set<MeetingEntity>();
 

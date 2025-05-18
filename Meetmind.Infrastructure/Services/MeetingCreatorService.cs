@@ -1,5 +1,7 @@
 ﻿
 using System.Threading;
+using MediatR;
+using Meetmind.Application.Command.Recording;
 using Meetmind.Application.Connectors;
 using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
@@ -22,13 +24,11 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
     private readonly IHubContext<MeetingHub> _hub;
     private readonly MeetMindDbContext _db;
     private readonly ILogger<MeetingCreatorService> _logger;
-    
 
-    public MeetingCreatorService(
-        IEnumerable<ICalendarConnector> calendarConnectors,
-        IDateTimeProvider clock,
-        IHubContext<MeetingHub> hub,
-        MeetMindDbContext db,
+    public MeetingCreatorService(IEnumerable<ICalendarConnector> calendarConnectors, 
+        IDateTimeProvider clock, 
+        IHubContext<MeetingHub> hub, 
+        MeetMindDbContext db, 
         ILogger<MeetingCreatorService> logger)
     {
         _calendarConnectors = calendarConnectors;
@@ -144,6 +144,7 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
                 .FirstOrDefaultAsync(token);
         var notifyBeforeMinutes = setting?.NotifyBeforeMinutes ?? 10;
         var notificationRepeatInterval = setting?.NotificationRepeatInterval ?? 1;
+        var autoStart = setting?.AutoStartRecord ?? false;
 
         foreach (var meeting in meetings)
         {
@@ -157,6 +158,10 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
 
             else if (minutesLeft <= 1 && minutesLeft > 0)
                 await SendReminder(meeting.Id, "La réunion commence dans une minute !");
+            if (minutesLeft <= 0)
+            {
+                await SendReminder(meeting.Id, "La réunion a démarré !");
+            }
         }
     }
 
