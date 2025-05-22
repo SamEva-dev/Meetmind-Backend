@@ -1,4 +1,6 @@
 ﻿
+using Meetmind.Domain.Enums;
+
 namespace Meetmind.Application.Dto
 {
     public class SettingsDto
@@ -17,5 +19,12 @@ namespace Meetmind.Application.Dto
         public bool UseOutlookCalendar { get; set; }
         public bool AutoCancelMeeting { get; set; }
         public bool AutoDeleteMeeting { get; set; }
+        public bool AutoCleanOrphanFragments { get; set; }
+        public TranscriptionType TranscriptionType { get; set; }
+        public AudioRecordingType AudioRecordingType { get; set; }
+        public WhisperModelType WhisperModelType { get; set; }
+        public WhisperDeviceType WhisperDeviceType { get; set; }
+        public WhisperComputeType WhisperComputeType { get; set; }
+        public DiarizationModelType DiarizationModelType { get; set; }
     }
 }

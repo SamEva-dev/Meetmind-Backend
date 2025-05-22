@@ -26,6 +26,9 @@ public class MeetingEntity : AggregateRoot
     public string? SummaryPath { get; private set; }
     public bool IsCancelled { get; private set; }
 
+    public string? AudioPath { get; private set; }
+
+
     public TimeSpan? Duration =>
         EndUtc.HasValue ? EndUtc.Value - StartUtc : null;
 
@@ -45,6 +48,16 @@ public class MeetingEntity : AggregateRoot
     {
         ExternalId = externalId;
         ExternalSource = source;
+    }
+
+    public void MakePending()
+    {
+        State = MeetingState.Pending;
+    }
+
+    public void MakeRequested()
+    {
+        TranscriptState = TranscriptState.NotRequested;
     }
 
     public void StartRecording()
@@ -94,13 +107,13 @@ public class MeetingEntity : AggregateRoot
         TranscriptState = TranscriptState.Processing;
     }
 
-    public void MarkTranscriptionCompleted(string path)
+    public void MarkTranscriptionCompleted()
     {
-        if (string.IsNullOrWhiteSpace(path))
-            throw new ArgumentException("Transcript path cannot be empty.");
-
+        if (TranscriptState != TranscriptState.Processing)
+            throw new InvalidOperationException("Transcription must be processing before completed.");
+        if (State is not  MeetingState.Done)
+            throw new InvalidOperationException("Transcription can only be completed for done meetings.");
         TranscriptState = TranscriptState.Completed;
-        TranscriptPath = path;
     }
 
     public void MarkTranscriptionFailed()
@@ -140,6 +153,19 @@ public class MeetingEntity : AggregateRoot
 
         IsCancelled = true;
         State = MeetingState.Cancelled;
+    }
+
+    public void AttachAudio(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("AudioPath is required");
+
+        AudioPath = path;
+    }
+
+    public void DetachAudio()
+    {
+        AudioPath = null;
     }
 
 }

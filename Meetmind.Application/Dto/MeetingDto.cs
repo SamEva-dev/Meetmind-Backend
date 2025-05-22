@@ -15,6 +15,8 @@ public sealed class MeetingDto
     public string SummaryState { get; init; } = default!;
     public string? SummaryPath { get; init; }
 
+    public string? AudioPath { get; init; }
+
     public TimeSpan? Duration =>
         EndUtc.HasValue ? EndUtc.Value - StartUtc : null;
 }

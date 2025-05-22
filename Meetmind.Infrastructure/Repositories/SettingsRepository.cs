@@ -26,6 +26,7 @@ namespace Meetmind.Infrastructure.Repositories
 
         public Task<SettingsDto> GetAllAsync(CancellationToken cancellationToken)
         {
+            var test = _ = _dbContext.Settings.ToListAsync(cancellationToken);
             return _dbContext.Settings
                 .AsNoTracking()
                 .ProjectTo<SettingsDto>(_mapper.ConfigurationProvider)

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package GrpcWhisper;
+
+service WhisperTranscription {
+  rpc Transcribe (TranscriptionRequest) returns (TranscriptionResponse);
+}
+
+message TranscriptionRequest {
+  string audioFilePath = 1;
+}
+
+message TranscriptionResponse {
+  string transcriptFilePath = 1;
+  string errorMessage = 2;
+}

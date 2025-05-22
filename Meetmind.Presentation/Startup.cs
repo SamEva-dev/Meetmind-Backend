@@ -4,6 +4,8 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using Meetmind.Presentation.Extensions;
 using Meetmind.Presentation.Hubs;
+using static Meetmind.Presentation.PythonExtensionInstaller;
+using System.Diagnostics;
 
 namespace Meetmind.Presentation
 {
@@ -18,6 +20,27 @@ namespace Meetmind.Presentation
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Charger settings worker
+            var workerHost = Configuration["TranscriptionWorker:Host"] ?? "127.0.0.1";
+            var workerPort = Configuration["TranscriptionWorker:Port"] ?? "8000";
+
+            var workerProcess = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "python",
+                    Arguments = $"transcribe_worker.py", // chemin absolu si besoin
+                    WorkingDirectory = "Scripts", // Dossier où est le script et logger_config.py
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    // Ici tu peux passer des ENV si tu veux
+                    // Environment = { ["WHISPER_MODEL"] = "...", ... }
+                }
+            };
+            workerProcess.Start();
+
             services.AddControllers();
             services.AddApiVersioning(o =>
             {
@@ -94,6 +117,14 @@ namespace Meetmind.Presentation
                 endpoints.MapControllers();
                 endpoints.MapHub<SettingsHub>("/hubs/settings");
                 endpoints.MapHub<MeetingHub>("/hubs/meeting");
+                endpoints.MapGet("/status/python", () =>
+                {
+                    return Results.Ok(new
+                    {
+                        ready = PythonEnvironmentStatus.IsPythonReady,
+                        message = PythonEnvironmentStatus.StatusMessage
+                    });
+                });
             });
             // #endif
         }

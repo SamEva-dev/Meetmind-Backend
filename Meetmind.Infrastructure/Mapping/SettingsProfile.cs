@@ -9,8 +9,7 @@ public class SettingsProfile : Profile
 {
     public SettingsProfile()
     {
-        CreateMap<SettingsEntity, SettingsDto>();
-
-        CreateMap<SettingsDto, SettingsEntity>();
+        CreateMap<SettingsEntity, SettingsDto>()
+            .ReverseMap();
     }
 }

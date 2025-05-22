@@ -40,7 +40,7 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
         {
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
 
                 using var scope = _scopeFactory.CreateScope();
                 var meetingCreator = scope.ServiceProvider.GetRequiredService<IMeetingCreatorService>();
@@ -72,21 +72,28 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
         using var scope = _scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<MeetMindDbContext>();
 
-        await CancelDeletedOrRemoteCancelledMeetingsAsync(dbContext,cancellationToken);
-        await DetectAndHandleGhostMeetingsAsync(dbContext,cancellationToken);
-        await ProcessAutoStartAsync(dbContext, cancellationToken);
-        await ProcessAutoStopAsync(dbContext, cancellationToken);
+        var settings = await dbContext.Settings
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(cancellationToken);
+
+        if (settings.AutoCancelMeeting)
+            await CancelDeletedOrRemoteCancelledMeetingsAsync(dbContext, cancellationToken);
+
+        if (settings.AutoDeleteMeeting)
+            await DetectAndHandleGhostMeetingsAsync(dbContext,cancellationToken);
+
+        if (settings.AutoStartRecord)
+            await ProcessAutoStartAsync(dbContext, cancellationToken);
+
+        if (settings.AutoStopRecord)
+            await ProcessAutoStopAsync(dbContext, cancellationToken);
+        if (settings.AutoCleanOrphanFragments)
+            await CleanOrphanFragmentsAsync(cancellationToken);
     }
 
     private async Task ProcessAutoStartAsync(MeetMindDbContext dbContext, CancellationToken ct)
     {
         var now = _clock.UtcNow;
-        var settings = await dbContext.Settings
-        .AsNoTracking()
-                .FirstOrDefaultAsync(ct);
-
-        if (!settings.AutoStartRecord)
-            return;
 
         var meetingsToStart = await dbContext.Meetings
             .Where(m => m.State == MeetingState.Pending && m.StartUtc <= now && !m.IsCancelled)
@@ -101,13 +108,6 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
 
     private async Task ProcessAutoStopAsync(MeetMindDbContext dbContext, CancellationToken ct)
     {
-        var settings = await dbContext.Settings
-       .AsNoTracking()
-               .FirstOrDefaultAsync(ct);
-
-        if (!settings.AutoStopRecord)
-            return;
-
         var now = _clock.UtcNow;
 
         var meetingsToStop = await dbContext.Meetings
@@ -119,20 +119,13 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
 
         foreach (var meeting in meetingsToStop)
         {
-            _logger.LogInformation("⏹️ Auto-stop meeting {Id}", meeting.Id);
+          _logger.LogInformation("⏹️ Auto-stop meeting {Id}", meeting.Id);
             await _mediator.Send(new StopRecordingCommand(meeting.Id, DateTime.UtcNow), ct);
         }
     }
 
     private async Task CancelDeletedOrRemoteCancelledMeetingsAsync(MeetMindDbContext dbContext, CancellationToken ct)
     {
-        var settings = await dbContext.Settings
-      .AsNoTracking()
-              .FirstOrDefaultAsync(ct);
-
-        if (!settings.AutoCancelMeeting)
-            return;
-
         var meetings = await dbContext.Meetings
                                 .Where(m => !m.IsCancelled && m.ExternalId != null)
                                  .ToListAsync(ct);
@@ -158,13 +151,6 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
 
     private async Task DetectAndHandleGhostMeetingsAsync(MeetMindDbContext dbContext, CancellationToken ct)
     {
-        var settings = await dbContext.Settings
-      .AsNoTracking()
-              .FirstOrDefaultAsync(ct);
-
-        if (!settings.AutoDeleteMeeting)
-            return;
-
         var now = _clock.UtcNow;
 
         var ghostMeetings = await dbContext.Meetings
@@ -180,4 +166,44 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
         await dbContext.SaveChangesAsync(ct);
     }
 
+    private async Task CleanOrphanFragmentsAsync(CancellationToken ct)
+    {
+        try
+        {
+            var basePath = Path.Combine(AppContext.BaseDirectory, "Resources", "audio");
+            var now = DateTime.UtcNow;
+            var files = Directory.Exists(basePath)
+                ? Directory.GetFiles(basePath, "*.wav", SearchOption.AllDirectories)
+                : Array.Empty<string>();
+
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<MeetMindDbContext>();
+
+            foreach (var file in files)
+            {
+                var info = new FileInfo(file);
+                // On considère comme "orphelin" si plus vieux que 24h et pas dans la table AudioMetadatas (ou pas EndUtc)
+                var isTracked = db.AudioMetadatas.Any(a => a.FilePath == file && a.EndUtc != null);
+                var isOld = info.CreationTimeUtc < now.AddHours(-24);
+
+                if (!isTracked && isOld)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                        _logger.LogInformation("Orphan audio fragment deleted: {File}", file);
+                        // Optionnel : ajouter un log d'audit en DB
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to delete orphan fragment: {File}", file);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while cleaning orphan audio fragments.");
+        }
+    }
 }

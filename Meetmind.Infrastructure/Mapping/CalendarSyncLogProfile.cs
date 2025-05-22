@@ -1,7 +1,7 @@
 ﻿
 using AutoMapper;
 using Meetmind.Application.Dto;
-using Meetmind.Domain.Models;
+using Meetmind.Domain.Entities;
 
 namespace Meetmind.Infrastructure.Mapping;
 

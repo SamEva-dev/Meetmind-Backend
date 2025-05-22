@@ -13,4 +13,6 @@ namespace Meetmind.Domain.Events.Interface;
     Task NotifyMeetingPaused(Guid meetingId);
     Task NotifyMeetingResumed(Guid meetingId);
     Task NotifyMeetingStopped(Guid meetingId);
+    Task NotifyRecordingError(Guid meetingId, string error);
+    Task NotifyFragmentUploaded(Guid meetingId, int sequenceNumber);
 }

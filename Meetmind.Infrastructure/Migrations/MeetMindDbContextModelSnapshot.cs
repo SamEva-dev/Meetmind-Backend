@@ -17,10 +17,117 @@ namespace Meetmind.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
 
+            modelBuilder.Entity("Meetmind.Domain.Entities.AudioEventLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UtcTimestamp")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AudioEventLogs");
+                });
+
+            modelBuilder.Entity("Meetmind.Domain.Entities.AudioMetadata", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AppVersion")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeSpan?>("Duration")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("EndUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Extra")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FragmentCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UploadedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AudioMetadatas");
+                });
+
+            modelBuilder.Entity("Meetmind.Domain.Entities.CalendarSyncLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MeetingsCreated")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TotalEventsFound")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CalendarSyncLogs");
+                });
+
             modelBuilder.Entity("Meetmind.Domain.Entities.MeetingEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AudioPath")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("End")
@@ -69,8 +176,7 @@ namespace Meetmind.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ExternalId", "ExternalSource")
-                        .IsUnique()
-                        .HasFilter("[ExternalId] IS NOT NULL AND [ExternalSource] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Meetings");
                 });
@@ -81,7 +187,14 @@ namespace Meetmind.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AudioRecordingType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("AutoCancelMeeting")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("AutoCleanOrphanFragments")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("AutoDeleteMeeting")
@@ -102,6 +215,10 @@ namespace Meetmind.Infrastructure.Migrations
                     b.Property<bool>("AutoTranslate")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("DiarizationModelType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Language")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -118,42 +235,112 @@ namespace Meetmind.Infrastructure.Migrations
                     b.Property<int>("RetentionDays")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("TranscriptionType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("UseGoogleCalendar")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("UseOutlookCalendar")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("WhisperComputeType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhisperDeviceType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhisperModelType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("Meetmind.Domain.Models.CalendarSyncLog", b =>
+            modelBuilder.Entity("Meetmind.Domain.Entities.TranscriptionEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ErrorMessage")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("MeetingsCreated")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<string>("Source")
+                    b.Property<double?>("Duration")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Language")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("TimestampUtc")
+                    b.Property<double?>("LanguageProbability")
+                        .HasColumnType("REAL");
+
+                    b.Property<Guid>("MeetingId")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("TotalEventsFound")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("SourceFile")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Speakers")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tilte")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("CalendarSyncLogs");
+                    b.ToTable("Transcriptions");
+                });
+
+            modelBuilder.Entity("Meetmind.Domain.Entities.TranscriptionSegment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("End")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Speaker")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Start")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TranscriptionId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TranscriptionId");
+
+                    b.ToTable("Segments");
                 });
 
             modelBuilder.Entity("Meetmind.Domain.Models.MeetingReadModel", b =>
@@ -200,8 +387,22 @@ namespace Meetmind.Infrastructure.Migrations
                     b.HasIndex("StartUtc");
 
                     b.ToTable("MeetingReadModels", (string)null);
+                });
 
-                    b.HasAnnotation("Sqlite:FTS5", "SearchText");
+            modelBuilder.Entity("Meetmind.Domain.Entities.TranscriptionSegment", b =>
+                {
+                    b.HasOne("Meetmind.Domain.Entities.TranscriptionEntity", "Transcription")
+                        .WithMany("Segments")
+                        .HasForeignKey("TranscriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Transcription");
+                });
+
+            modelBuilder.Entity("Meetmind.Domain.Entities.TranscriptionEntity", b =>
+                {
+                    b.Navigation("Segments");
                 });
 #pragma warning restore 612, 618
         }

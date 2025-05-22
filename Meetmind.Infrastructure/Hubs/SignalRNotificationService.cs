@@ -11,12 +11,22 @@ namespace Meetmind.Infrastructure.Hubs
     {
         private readonly IHubContext<SettingsHub> _settingsHub;
         private readonly IHubContext<MeetingHub> _meetingsHub;
+        private readonly IHubContext<AudioHub> _audioHub;
         private readonly IMapper _mapper;
         public SignalRNotificationService(
         IHubContext<SettingsHub> settingsHub, IMapper mapper)
         {
             _settingsHub = settingsHub;
             _mapper = mapper;
+        }
+
+        public async Task NotifyFragmentUploaded(Guid meetingId, int sequenceNumber)
+        {
+            await _meetingsHub.Clients.All.SendAsync("SteamAudio", new
+            {
+                MeetingId = meetingId,
+                SequenceNumber = sequenceNumber
+            });
         }
 
         public async Task NotifyMeetingPaused(Guid meetingId)
@@ -54,6 +64,9 @@ namespace Meetmind.Infrastructure.Hubs
                 Timestamp = DateTime.UtcNow
             });
         }
+
+        public Task NotifyRecordingError(Guid meetingId, string error) =>
+         _audioHub.Clients.Group(meetingId.ToString()).SendAsync("RecordingError", meetingId,  error);
 
         public async Task NotifySettingsUpdatedAsync(SettingsEntity settings)
         {

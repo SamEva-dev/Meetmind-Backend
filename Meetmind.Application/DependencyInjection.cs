@@ -18,7 +18,6 @@ namespace Meetmind.Application
             {
                 cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
             });
-
             return services;
         }
     }

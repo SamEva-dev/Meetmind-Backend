@@ -13,14 +13,20 @@ public sealed class StartRecordingHandler : IRequestHandler<StartRecordingComman
     private readonly IMeetingRepository _repo;
     private readonly IUnitOfWork _uow;
     private readonly ILogger<StartRecordingHandler> _logger;
+    private readonly IAudioRecordingService _audioService;
     private readonly IMapper _mapper;
 
-    public StartRecordingHandler(IMeetingRepository repo, IUnitOfWork uow, IMapper mapper, ILogger<StartRecordingHandler> logger)
+    public StartRecordingHandler(IMeetingRepository repo, 
+        IUnitOfWork uow,
+        IAudioRecordingService audioService,
+        IMapper mapper, 
+        ILogger<StartRecordingHandler> logger)
     {
         _repo = repo;
         _uow = uow;
         _mapper = mapper;
         _logger = logger;
+        _audioService = audioService;
     }
 
     public async Task<Unit> Handle(StartRecordingCommand request, CancellationToken cancellationToken)
@@ -32,7 +38,12 @@ public sealed class StartRecordingHandler : IRequestHandler<StartRecordingComman
             _logger.LogWarning("Meeting {MeetingId} not found", request.MeetingId);
             throw new KeyNotFoundException($"Meeting {request.MeetingId} not found");
         }
+        meeting.MakePending();
+        meeting.MakeRequested();
         meeting.StartRecording();
+
+       
+        await _audioService.StartAsync(meeting.Id, meeting.Title, cancellationToken);
 
         await _uow.SaveChangesAsync(cancellationToken);
 

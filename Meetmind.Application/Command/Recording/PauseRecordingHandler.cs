@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading;
 using AutoMapper;
 using MediatR;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
-using Meetmind.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Application.Command.Recording;
@@ -17,14 +12,18 @@ public sealed class PauseRecordingHandler : IRequestHandler<PauseRecordingComman
     private readonly IMeetingRepository _repo;
     private readonly IUnitOfWork _uow;
     private readonly ILogger<PauseRecordingHandler> _logger;
+    private readonly IAudioRecordingService _audioService;
     private readonly IMapper _mapper;
 
-    public PauseRecordingHandler(IMeetingRepository repo, IUnitOfWork uow, ILogger<PauseRecordingHandler> logger, IMapper mapper)
+    public PauseRecordingHandler(IMeetingRepository repo, 
+        IUnitOfWork uow, IAudioRecordingService audioService, 
+        ILogger<PauseRecordingHandler> logger, IMapper mapper)
     {
         _repo = repo;
         _uow = uow;
         _logger = logger;
         _mapper = mapper;
+        _audioService = audioService;
     }
 
     public async Task<Unit> Handle(PauseRecordingCommand request, CancellationToken ct)
@@ -39,7 +38,10 @@ public sealed class PauseRecordingHandler : IRequestHandler<PauseRecordingComman
 
         meeting.PauseRecording();
 
+        await _audioService.PauseAsync(meeting.Id, ct);
+
         await _uow.SaveChangesAsync(ct);
+
         return Unit.Value;
     }
 }

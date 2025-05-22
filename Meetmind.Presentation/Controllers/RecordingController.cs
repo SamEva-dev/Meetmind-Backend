@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Meetmind.Application.Command.Audio;
 using Meetmind.Application.Command.Recording;
 using Meetmind.Application.QueryHandles.Recording;
 using Microsoft.AspNetCore.Mvc;
@@ -148,6 +149,14 @@ namespace Meetmind.Presentation.Controllers
             {
                 _logger.LogInformation("Finished Pause");
             }
+        }
+
+        [HttpPost("fragment")]
+        public async Task<IActionResult> UploadFragment(Guid id,int sequenceNumber, IFormFile audioChunk)
+        {
+            await _mediator.Send(new AddAudioFragmentCommand(id, sequenceNumber, audioChunk));
+
+            return Ok();
         }
     }
 }

@@ -9,11 +9,14 @@ using Meetmind.Infrastructure.Hubs;
 using Meetmind.Infrastructure.Mapping;
 using Meetmind.Infrastructure.Repositories;
 using Meetmind.Infrastructure.Services;
+using Meetmind.Infrastructure.Services.Recording;
+using Meetmind.Infrastructure.Services.Transcription;
 using Meetmind.Infrastructure.Workers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
+using AutoMapper.Extensions.EnumMapping;
+using AutoMapper.EquivalencyExpression;
 
 namespace Meetmind.Infrastructure
 {
@@ -25,18 +28,39 @@ namespace Meetmind.Infrastructure
             services.AddDbContext<MeetMindDbContext>(options =>
                 options.UseSqlite($"Data Source={dbPath}"));
 
+            var workerHost = config["FastAPI:Host"] ?? "127.0.0.1";
+            var workerPort = config["FastAPI:Port"] ?? "8000";
+
             services.AddAutoMapper((serviceProvider, cfg) =>
             {
-                //  cfg.AddExpressionMapping();
-                // cfg.AddCollectionMappers();
+                 // cfg.AddExpressionMapping();
+                cfg.AddCollectionMappers();
+                //cfg.AddProfile<MeetingProfile>();
+                cfg.AddProfile<TranscriptionProfile>();
                 cfg.AddProfile<MeetingProfile>();   
                 cfg.AddProfile<SettingsProfile>();
                 cfg.AddProfile<CalendarSyncLogProfile>();
             }, new System.Reflection.Assembly[0]);
 
             services.AddHostedService<CalendarWorker>();
+            services.AddHostedService<TranscriptionWorker>();
 
+            //services.AddGrpcClient<WhisperTranscription.WhisperTranscriptionClient>(options =>
+            //{
+            //    options.Address = new Uri("https://localhost:5001");
+            //})
+            //    .ConfigurePrimaryHttpMessageHandler(() =>
+            //new HttpClientHandler
+            //{
+            //    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            //});
+            services.AddScoped<GrpcTranscriptionService>();
+
+
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ISettingsRepository, SettingsRepository>();
+            services.AddScoped<ITranscriptionRepository,TranscriptionRepository>();
             services.AddScoped<INotificationService, SignalRNotificationService>();
             services.AddScoped<IMeetingCreatorService, MeetingCreatorService>();
             services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
@@ -46,8 +70,28 @@ namespace Meetmind.Infrastructure
             services.AddScoped<ICalendarSyncLogRepository, CalendarSyncLog>();
             services.AddScoped<IMeetingRepository, MeetingRepository>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IOutlookTokenService, OutlookTokenService>();
+            services.AddScoped<IAudioFragmentRepository, AudioFragmentRepository>();
+
+            services.AddScoped<GrpcTranscriptionService>();
+            services.AddScoped<ProcessTranscriptionService>();
+            services.AddScoped<InteropTranscriptionService>();
+
+            services.AddScoped<NativeAudioRecordingService>();
+            services.AddScoped<ProcessAudioRecordingService>();
+
+            services.AddHttpClient<AudioTranscriptionService>(client =>
+            {
+                client.BaseAddress = new Uri($"http://{workerHost}:{workerPort}/");
+            });
+
+
+            services.AddScoped<AudioRecordingRouterService>();
+
+            services.AddScoped<TranscriptionRouterService>();
+
+            services.AddScoped<ITranscriptionService>(sp => sp.GetRequiredService<TranscriptionRouterService>());
+            services.AddScoped<IAudioRecordingService>(sp => sp.GetRequiredService<AudioRecordingRouterService>());
 
             return services;
         }
