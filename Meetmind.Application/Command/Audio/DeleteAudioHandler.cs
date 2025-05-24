@@ -55,13 +55,6 @@ public class DeleteAudioHandler : IRequestHandler<DeleteAudioCommand, Unit>
         }
         await _audioFragmentRepository.DeleteAsync(audioFragments, cancellationToken);
 
-        var files = Directory.GetFiles(meeting.AudioPath);
-        if (files.Length == 0)
-        {
-            _logger.LogError($"Audio not found for meeting ID {request.MeetingId}");
-            throw new FileNotFoundException($"Audio not found for meeting ID {request.MeetingId}");
-        }
-
         if (!File.Exists(meeting.AudioPath))
         {
             _logger.LogDebug($"Fichier audio introuvable pour suppression : {meeting.AudioPath}");

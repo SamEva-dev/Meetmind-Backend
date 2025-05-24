@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Meetmind.Presentation.Controllers
 {
-    [Route("v1/meetings/{id}/[controller]")]
+    [Route("v1/[controller]/{id}")]
     [ApiController]
     public class RecordingController : ControllerBase
     {

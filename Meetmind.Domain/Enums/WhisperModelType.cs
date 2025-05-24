@@ -5,6 +5,8 @@ namespace Meetmind.Domain.Enums;
 
 public enum WhisperModelType
 {
+    [Description("Modèle par défaut (base)")]
+    Auto,
     [Description("Tiny (32M params) – rapide, qualité basse")]
     Tiny,
 

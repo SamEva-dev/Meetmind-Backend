@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper.Extensions.EnumMapping;
 using AutoMapper.EquivalencyExpression;
+using Meetmind.Infrastructure.Services.Summarize;
 
 namespace Meetmind.Infrastructure
 {
@@ -73,6 +74,8 @@ namespace Meetmind.Infrastructure
             services.AddScoped<IOutlookTokenService, OutlookTokenService>();
             services.AddScoped<IAudioFragmentRepository, AudioFragmentRepository>();
 
+            services.AddScoped<ISummarizeService, SummarizeService>();
+
             services.AddScoped<GrpcTranscriptionService>();
             services.AddScoped<ProcessTranscriptionService>();
             services.AddScoped<InteropTranscriptionService>();
@@ -81,6 +84,11 @@ namespace Meetmind.Infrastructure
             services.AddScoped<ProcessAudioRecordingService>();
 
             services.AddHttpClient<AudioTranscriptionService>(client =>
+            {
+                client.BaseAddress = new Uri($"http://{workerHost}:{workerPort}/");
+            });
+
+            services.AddHttpClient<AudioSummarizeService>(client =>
             {
                 client.BaseAddress = new Uri($"http://{workerHost}:{workerPort}/");
             });

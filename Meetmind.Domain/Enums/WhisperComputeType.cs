@@ -6,7 +6,7 @@ namespace Meetmind.Domain.Enums;
 public enum WhisperComputeType
 {
     [Description("Auto (choix optimal par le modèle)")]
-    Default,
+    Auto,
 
     [Description("int8 (CPU) – quantization, rapide, mémoire faible)")]
     Int8,

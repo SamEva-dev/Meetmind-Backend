@@ -26,5 +26,6 @@ namespace Meetmind.Application.Dto
         public WhisperDeviceType WhisperDeviceType { get; set; }
         public WhisperComputeType WhisperComputeType { get; set; }
         public DiarizationModelType DiarizationModelType { get; set; }
+        public DiarizationModelType SummarizeModelType { get; set; }
     }
 }

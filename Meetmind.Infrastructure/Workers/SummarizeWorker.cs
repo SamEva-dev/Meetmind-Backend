@@ -1,5 +1,4 @@
 ﻿using Meetmind.Application.Services;
-using Meetmind.Domain.Entities;
 using Meetmind.Domain.Enums;
 using Meetmind.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
@@ -9,12 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Infrastructure.Workers;
 
-public sealed class TranscriptionWorker : BackgroundService
+internal class SummarizeWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<TranscriptionWorker> _logger;
 
-    public TranscriptionWorker(IServiceScopeFactory scopeFactory,
+    public SummarizeWorker(IServiceScopeFactory scopeFactory,
         ILogger<TranscriptionWorker> logger)
     {
         _scopeFactory = scopeFactory;
@@ -27,45 +26,44 @@ public sealed class TranscriptionWorker : BackgroundService
         {
             try
             {
-                await ProcessTranscriptionsAsync(stoppingToken);
+                await ProcessSummarizeAsync(stoppingToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur dans TranscriptionWorker");
+                _logger.LogError(ex, "Erreur dans SummarizeWorker");
             }
 
             await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
         }
     }
 
-    private async Task ProcessTranscriptionsAsync(CancellationToken ct)
+    private async Task ProcessSummarizeAsync(CancellationToken ct)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MeetMindDbContext>();
-        var _transcriptionService = scope.ServiceProvider.GetRequiredService<ITranscriptionService>();
+        var _summService = scope.ServiceProvider.GetRequiredService<ISummarizeService>();
 
         var test = await db.Meetings.ToListAsync(ct);
-        var meetingsToTranscribe = await db.Meetings
-            .Where(m => m.State == MeetingState.Done && m.TranscriptState == TranscriptState.Queued)
+        var meetingsToSummarize = await db.Meetings
+            .Where(m => m.State == MeetingState.Done && m.SummaryState == SummaryState.Queued)
             .ToListAsync(ct);
 
-        foreach (var meeting in meetingsToTranscribe)
+        foreach (var meeting in meetingsToSummarize)
         {
             try
             {
-                meeting.MarkTranscriptionProcessing();
+                meeting.MarkSummaryProcessing();
                 await db.SaveChangesAsync(ct);
 
-                await _transcriptionService.TranscribeAsync(meeting, ct);
+                var summarizePath = await _summService.SummarizeAsync(meeting, ct);
 
-                meeting.MarkTranscriptionCompleted();
-                meeting.QueueSummary();
-                _logger.LogInformation("✅ Transcription complétée pour {Id}", meeting.Id);
+                meeting.MarkSummaryCompleted(summarizePath);
+                _logger.LogInformation("✅ Résumé complétée pour {Id}", meeting.Id);
             }
             catch (Exception ex)
             {
-                meeting.MarkTranscriptionFailed();
-                _logger.LogError(ex, "❌ Échec de la transcription pour {Id}", meeting.Id);
+                meeting.MarkSummaryFailed();
+                _logger.LogError(ex, "❌ Échec du résumé pour {Id}", meeting.Id);
             }
 
             await db.SaveChangesAsync(ct);

@@ -22,12 +22,13 @@ public sealed class SettingsEntity : AggregateRoot
     public int RetentionDays { get; set; }
     public bool AutoCancelMeeting { get; set; }
     public bool AutoDeleteMeeting { get; set; }
+    public bool AutoCleanOrphanFragments { get; set; }
 
     public TranscriptionType TranscriptionType { get; set; } = TranscriptionType.Grpc;
     public AudioRecordingType AudioRecordingType { get; set; } = AudioRecordingType.Native;
-    public WhisperModelType WhisperModelType { get; set; } = WhisperModelType.Base;
-    public WhisperDeviceType WhisperDeviceType { get; set; } = WhisperDeviceType.Cpu;
-    public WhisperComputeType WhisperComputeType { get; set; } = WhisperComputeType.Int8;
-    public DiarizationModelType DiarizationModelType { get; set; } = DiarizationModelType.SpeakerDiarization31;
-    public bool AutoCleanOrphanFragments { get; set; }
+    public WhisperModelType WhisperModelType { get; set; } = WhisperModelType.Auto;
+    public WhisperDeviceType WhisperDeviceType { get; set; } = WhisperDeviceType.Auto;
+    public WhisperComputeType WhisperComputeType { get; set; } = WhisperComputeType.Auto;
+    public DiarizationModelType DiarizationModelType { get; set; } = DiarizationModelType.Auto;
+    public SummaryModelType SummarizeModelType { get; set; } = SummaryModelType.Auto;
 }

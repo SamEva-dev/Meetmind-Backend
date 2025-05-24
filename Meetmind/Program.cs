@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Meetmind;
 using System.Diagnostics;
+using Serilog.Core;
 
 var configurationBuilder = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
@@ -41,7 +42,13 @@ if (!Directory.Exists("Data")) Directory.CreateDirectory("Data");
 
 
 Log.Information("*** STARTUP ***");
-var requiredPythonLibs = new[] { "torch", "faster-whisper", "pyannote.audio", "sentencepiece", "python-multipart" };
+var requiredPythonLibs = new[] { "torch", 
+                                "faster-whisper", 
+                                "pyannote.audio", 
+                                "sentencepiece", 
+                                "python-multipart", 
+                                "pydantic",
+                                "langdetect"};
 
 await PythonExtensionInstaller.EnsurePythonAndLibsAsync(requiredPythonLibs);
 
@@ -94,26 +101,55 @@ static void RunTranscriptionFastApi(IConfiguration configuration, IHost host)
     var workerHost = configuration["TranscriptionWorker:Host"] ?? "127.0.0.1";
     var workerPort = configuration["TranscriptionWorker:Port"] ?? "8000";
 
-    var workerProcess = new Process
+    string scriptPath = Path.GetFullPath("Scripts/transcribe_and_diarize.py");
+
+    if (!File.Exists(scriptPath))
     {
-        StartInfo = new ProcessStartInfo
-        {
-            FileName = "python",
-            Arguments = $"transcribe_and_diarize:app --host {workerHost} --port {workerPort}", // chemin absolu si besoin
-            WorkingDirectory = "Scripts", // chemin où se trouve le script Python
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        }
+        Log.Error("TranscribeWorker script not found at path: {Path}", scriptPath);
+        // Tu peux aussi lever une exception ou retourner selon ton besoin :
+        throw new FileNotFoundException($"Le script Python transcribe_worker.py est introuvable à l’emplacement {scriptPath}");
+    }
+
+
+    var psi = new ProcessStartInfo
+    {
+        FileName = "python",
+        Arguments = $"-m uvicorn {scriptPath.Replace(".py", "")}:app --host {workerHost} --port {workerPort}",
+        WorkingDirectory = "Scripts",
+        UseShellExecute = false,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        CreateNoWindow = true
     };
-    Log.Information("Start process: " + workerProcess.StartInfo.FileName + " " + workerProcess.StartInfo.Arguments);
-    workerProcess.Start();
+    
+    Log.Information("Start process: " + psi.FileName + " " + psi.Arguments);
+    var process = new Process { StartInfo = psi };
+    process.OutputDataReceived += (sender, args) =>
+    {
+        if (!string.IsNullOrWhiteSpace(args.Data))
+            Log.Information("[TranscribeWorker STDOUT] {Message}", args.Data);
+    };
+    process.ErrorDataReceived += (sender, args) =>
+    {
+        if (!string.IsNullOrWhiteSpace(args.Data))
+            Log.Error("[TranscribeWorker STDERR] {Message}", args.Data);
+    };
+
+    if (process.Start())
+    {
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        Log.Information("TranscribeWorker process started successfully: {FileName} (PID: {PID})", psi.FileName, process.Id);
+    }
+    else
+    {
+        Log.Error("Failed to start TranscribeWorker process: {FileName}", psi.FileName);
+    }
     Task.Run(async () =>
     {
-        while (!workerProcess.StandardOutput.EndOfStream)
+        while (!process.StandardOutput.EndOfStream)
         {
-            var line = await workerProcess.StandardOutput.ReadLineAsync();
+            var line = await process.StandardOutput.ReadLineAsync();
             Log.Information("[PYTHON] " + line);
         }
     });
@@ -123,7 +159,7 @@ static void RunTranscriptionFastApi(IConfiguration configuration, IHost host)
     {
         try { 
             Log.Information("Stopping transcription worker...");
-            if (!workerProcess.HasExited) workerProcess.Kill(); 
+            if (!process.HasExited) process.Kill(); 
         }
         catch (Exception ex)
         {

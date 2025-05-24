@@ -19,7 +19,7 @@ namespace Meetmind.Presentation.Controllers
         }
 
         [HttpGet("{meetingId}")]
-        public async Task<IActionResult> GetAudioByID([FromRoute] Guid meetingId)
+        public async Task<IActionResult> Download([FromRoute] Guid meetingId)
         {
             // Recherche du meeting et récupération du chemin du fichier audio
             var meeting = await _mediator.Send(new GetMeetingByIdQuery(meetingId));
@@ -46,7 +46,7 @@ namespace Meetmind.Presentation.Controllers
         /// Supprime le fichier audio associé à une réunion
         /// </summary>
         [HttpDelete("{meetingId:guid}")]
-        public async Task<IActionResult> DeleteAudio([FromRoute] Guid meetingId, string tilte)
+        public async Task<IActionResult> DeleteAudio([FromRoute] Guid meetingId)
         {
             try
             {

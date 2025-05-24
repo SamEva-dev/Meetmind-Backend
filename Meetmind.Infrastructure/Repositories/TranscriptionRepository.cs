@@ -49,7 +49,7 @@ namespace Meetmind.Infrastructure.Repositories
             var query = await _db.Transcriptions
                 .AsNoTracking()
                 .Include(t => t.Segments)
-                .Where(m => m.Id == meetingId)
+                .Where(m => m.MeetingId == meetingId)
                 .ProjectTo<TranscriptionDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(cancellationToken);
 

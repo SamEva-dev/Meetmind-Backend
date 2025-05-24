@@ -27,6 +27,12 @@ public static class EnumHelper
             DiarizationModelType.SpeakerDiarization31 => "pyannote/speaker-diarization-3.1",
             DiarizationModelType.Segmentation30 => "pyannote/segmentation-3.0",
             DiarizationModelType.Segmentation => "pyannote/segmentation",
+            SummaryModelType.BartLargeCnn => "facebook/bart-large-cnn",
+            SummaryModelType.BartBaseFrench => "cmarkea/bart-base-french-summarizer",
+            SummaryModelType.Bert2BertSpanish => "mrm8488/bert2bert_shared-spanish-finetuned-summarization",
+            SummaryModelType.Mt5German => "ml6team/mt5-small-german-finetune-mlsum",
+            SummaryModelType.Bert2BertItalian => "mrm8488/bert2bert_shared-italian-finetuned-summarization",
+            SummaryModelType.BartBasePortuguese => "cmarkea/bart-base-portuguese-summarizer",
             _ => value.ToString().ToLowerInvariant()
         };
     }

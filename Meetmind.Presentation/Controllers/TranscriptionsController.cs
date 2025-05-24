@@ -7,7 +7,7 @@ using QuestPDF.Fluent;
 
 namespace Meetmind.Presentation.Controllers
 {
-    [Route("v1/meetings/")]
+    [Route("v1/transcript")]
     [ApiController]
     public class TranscriptionsController : ControllerBase
     {
@@ -20,7 +20,7 @@ namespace Meetmind.Presentation.Controllers
             _logger = logger;
         }
 
-        [HttpGet("transcript")]
+        [HttpGet]
         public async Task<IActionResult> GetTranscription()
         {
             try
@@ -45,7 +45,7 @@ namespace Meetmind.Presentation.Controllers
             }
         }
 
-        [HttpGet("{id}/transcript")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetTranscriptionById(Guid id)
         {
             try
@@ -71,7 +71,7 @@ namespace Meetmind.Presentation.Controllers
         }
 
         [HttpGet("{id}/pdf")]
-        public async Task<IActionResult> GetTranscriptPdf(Guid id)
+        public async Task<IActionResult> Download(Guid id)
         {
             try
             {
@@ -103,7 +103,7 @@ namespace Meetmind.Presentation.Controllers
             }
         }
 
-        [HttpPost("{id}/transcript")]
+        [HttpPost("{id}")]
         public async Task<IActionResult> RequestTranscription(Guid id)
         {
             try
@@ -133,7 +133,7 @@ namespace Meetmind.Presentation.Controllers
             }
         }
 
-        [HttpDelete("{id}/transcript")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTranscription(Guid id)
         {
             try
