@@ -3,6 +3,7 @@ using MediatR;
 using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Entities;
 using Meetmind.Domain.Events.Interface;
 using Microsoft.Extensions.Logging;
@@ -36,7 +37,7 @@ namespace Meetmind.Application.Command.Settings
             await _settingsRepository.SaveAsync(settingEntity, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
 
-            await _notification.NotifySettingsUpdatedAsync(settingEntity);
+            await _notification.NotifySettingsUpdatedAsync(settingEntity, cancellationToken);
 
             return _mapper.Map<SettingsDto>(settingEntity);
         }

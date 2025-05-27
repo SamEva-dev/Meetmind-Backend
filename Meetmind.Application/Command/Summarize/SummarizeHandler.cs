@@ -1,6 +1,9 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
+using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Application.Command.Summarize;
@@ -10,12 +13,20 @@ public class SummarizeHandler : IRequestHandler<SummarizeCommand, Unit>
     private readonly IMeetingRepository _repo;
     private readonly IUnitOfWork _uow;
     private readonly ILogger<SummarizeHandler> _logger;
+    private readonly INotificationService _notificationService;
+    private readonly IMapper _mapper;
 
-    public SummarizeHandler(IMeetingRepository repo, IUnitOfWork uow, ILogger<SummarizeHandler> logger)
+    public SummarizeHandler(IMeetingRepository repo, 
+        IUnitOfWork uow,
+        INotificationService notificationService,
+        IMapper mapper,
+        ILogger<SummarizeHandler> logger)
     {
         _repo = repo;
         _uow = uow;
         _logger = logger;
+        _notificationService = notificationService;
+        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(SummarizeCommand request, CancellationToken cancellationToken)
@@ -40,6 +51,10 @@ public class SummarizeHandler : IRequestHandler<SummarizeCommand, Unit>
         }
         meeting.QueueSummary();
         await _uow.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Meeting {MeetingId} queued for summarization", request.MeetingId);
+
+        await _notificationService.NotifySummaryQueuedAsync(_mapper.Map<MeetingDto>(meeting), cancellationToken);
 
         return Unit.Value;
     }

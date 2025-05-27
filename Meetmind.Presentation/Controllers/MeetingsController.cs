@@ -93,5 +93,26 @@ namespace Meetmind.Presentation.Controllers
                 _logger.LogInformation("Finished Delete");
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateMeeting(CreateMeetingCommand command)
+        {
+            try
+            {
+                _logger.LogInformation("Create meetind with");
+                var meetingId = await _mediator.Send(command);
+
+                return Created(nameof(GetById), meetingId);
+            }
+            catch (Exception ex )
+            {
+                _logger.LogError(ex, "Error occurred while creating meeting");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
+            }
+            finally 
+            {
+                _logger.LogInformation("Finished Create");
+            }
+        }
     }
 }

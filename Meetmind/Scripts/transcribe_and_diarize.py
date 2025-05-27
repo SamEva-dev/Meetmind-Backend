@@ -4,6 +4,8 @@ import json
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 import tempfile
+from datetime import datetime
+from enum import Enum
 
 # Forcer UTF-8 sur Windows
 if hasattr(sys.stdout, "reconfigure"):
@@ -62,7 +64,7 @@ WHISPER_MODEL_FOR_LANG = {
 WHISPER_MODEL_FALLBACK = "large-v2"  # Pour toutes les autres langues
 
 SUMMARY_MODEL_FOR_LANG = {
-    "fr": "cmarkea/bart-base-french-summarizer",  # HuggingFace (FR)
+    "fr": "plguillou/t5-base-fr-sum-cnndm",  # HuggingFace (FR)
     "en": "facebook/bart-large-cnn",              # HuggingFace (EN)
     "es": "mrm8488/bert2bert_shared-spanish-finetuned-summarization",  # HuggingFace (ES)
     "de": "ml6team/mt5-small-german-finetune-mlsum",                  # HuggingFace (DE)
@@ -230,10 +232,16 @@ async def transcribe(
 
 from pydantic import BaseModel
 
+class DetailLevel(str, Enum):
+    short = "short"
+    standard = "standard"
+    Detailed = "detailed"
+
 class SummarizeRequest(BaseModel):
     text: str
     language: str = None
     summary_model: str = None
+    detail_level: DetailLevel = DetailLevel.standard
 
 class SummarizeResponse(BaseModel):
     summary: str
@@ -245,6 +253,14 @@ async def summarize(req: SummarizeRequest):
     if len(text) > max_input_length:
         logger.warning(f"Texte résumé tronqué à {max_input_length} caractères.")
         text = text[:max_input_length]
+
+    # Paramétrage longueur du résumé selon le niveau de détail demandé
+    if req.detail_level == "short":
+        max_length, min_length = 80, 20
+    elif req.detail_level == "detailed":
+        max_length, min_length = 500, 80
+    else:  # "standard" par défaut
+        max_length, min_length = 250, 40
 
     # Détection automatique de la langue si non spécifiée/auto
     lang = req.language
@@ -285,6 +301,10 @@ async def summarize(req: SummarizeRequest):
         return JSONResponse({"summary": f"Erreur: {e}"}, status_code=500)
 
 
-@app.get("/test")
-def root():
-    return {"message": "Transcription+Diarization+Summary Worker is running. See /docs for API documentation."}
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "timestamp": datetime.now().isoformat() + "Z",
+        "version": "1.0.0"
+    }

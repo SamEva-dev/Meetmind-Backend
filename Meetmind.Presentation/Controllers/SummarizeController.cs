@@ -8,7 +8,7 @@ using QuestPDF.Fluent;
 
 namespace Meetmind.Presentation.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("v1/[controller]")]
     [ApiController]
     public class SummarizeController : ControllerBase
     {

@@ -3,6 +3,7 @@
 using MediatR;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Application.Command.Meetings;
@@ -11,12 +12,14 @@ public sealed class CancelMeetingHandler : IRequestHandler<CancelMeetingCommand,
 {
     private readonly IMeetingRepository _repo;
     private readonly IUnitOfWork _uow;
+    private readonly INotificationService _meetingNotifierService;
     private readonly ILogger<CancelMeetingHandler> _logger;
 
-    public CancelMeetingHandler(IMeetingRepository repo, IUnitOfWork uow, ILogger<CancelMeetingHandler> logger)
+    public CancelMeetingHandler(IMeetingRepository repo, IUnitOfWork uow, INotificationService meetingNotifierService, ILogger<CancelMeetingHandler> logger)
     {
         _repo = repo;
         _uow = uow;
+        _meetingNotifierService = meetingNotifierService;
         _logger = logger;
     }
 
@@ -37,6 +40,8 @@ public sealed class CancelMeetingHandler : IRequestHandler<CancelMeetingCommand,
 
         meeting.Cancel();
         await _uow.SaveChangesAsync(cancellationToken);
+
+        await _meetingNotifierService.NotifyMeetingCancelledAsync(meeting.Id, cancellationToken);
 
         _logger.LogInformation("🗑️ Meeting {Id} cancelled successfully", meeting.Id);
         return Unit.Value;

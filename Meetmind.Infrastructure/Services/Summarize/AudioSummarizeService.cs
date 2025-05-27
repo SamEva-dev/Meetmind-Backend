@@ -39,7 +39,8 @@ public class AudioSummarizeService
             {
                 text = transcription.Text,
                 language = setting?.Language,
-                summary_model = EnumHelper.GetEnumValueForPython(setting.SummarizeModelType)
+                summary_model = EnumHelper.GetEnumValueForPython(setting.SummarizeModelType),
+                detail_level = EnumHelper.GetEnumValueForPython(setting.SummarizeDetailLevel)
             };
 
             var content = new StringContent(

@@ -1,4 +1,5 @@
 ﻿
+using Meetmind.Application.Command.Meetings;
 using Meetmind.Application.Dto;
 using Meetmind.Domain.Entities;
 
@@ -10,4 +11,5 @@ public interface IMeetingRepository
     Task<MeetingDto?> GetMeetingById(Guid id, CancellationToken cancellationToken);
     Task<List<MeetingDto>> GetMeetingToday(CancellationToken cancellationToken);
     Task<MeetingEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Guid> CreateMeetingAsync(CreateMeetingCommand request, CancellationToken cancellationToken);
 }

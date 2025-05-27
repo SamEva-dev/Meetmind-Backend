@@ -7,7 +7,7 @@ namespace Meetmind.Application.Command.Settings;
 
 public record SettingsCommand: IRequest<SettingsDto>
 {
-    public string Language { get; set; }
+    public LanguageCode Language { get; set; }
     public bool AutoStartRecord { get; set; } = false;
     public bool AutoStopRecord { get; set; } = false;
     public bool AutoTranscript { get; set; } = false;

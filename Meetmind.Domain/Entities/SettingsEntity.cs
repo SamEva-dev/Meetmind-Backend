@@ -8,7 +8,7 @@ namespace Meetmind.Domain.Entities;
 public sealed class SettingsEntity : AggregateRoot
 {
     private SettingsEntity() { }
-    public string Language { get; set; }
+    public LanguageCode Language { get; set; } = LanguageCode.En;
     public bool AutoStartRecord { get; set; } = false;
     public bool AutoStopRecord { get; set; } = false;
     public bool AutoTranscript { get; set; } = false;
@@ -31,4 +31,5 @@ public sealed class SettingsEntity : AggregateRoot
     public WhisperComputeType WhisperComputeType { get; set; } = WhisperComputeType.Auto;
     public DiarizationModelType DiarizationModelType { get; set; } = DiarizationModelType.Auto;
     public SummaryModelType SummarizeModelType { get; set; } = SummaryModelType.Auto;
+    public SummarizeDetailLevel SummarizeDetailLevel { get; set; } = SummarizeDetailLevel.Standard;
 }

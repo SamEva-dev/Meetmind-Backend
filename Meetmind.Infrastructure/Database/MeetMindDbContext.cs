@@ -1,9 +1,11 @@
 ﻿using System.Reflection.Emit;
 using System.Text.Json;
 using Meetmind.Domain.Entities;
+using Meetmind.Domain.Enums;
 using Meetmind.Domain.Models;
 using Meetmind.Domain.Units;
 using Meetmind.Infrastructure.Events;
+using Meetmind.Infrastructure.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Meetmind.Infrastructure.Database
@@ -72,6 +74,13 @@ namespace Meetmind.Infrastructure.Database
 
                 e.Property(x => x.DiarizationModelType)
                     .HasConversion<string>();
+                e.Property(x => x.SummarizeModelType)
+                    .HasConversion<string>();
+                e.Property(x => x.SummarizeDetailLevel)
+                    .HasConversion<string>();
+                e.Property(x => x.Language)
+                    .HasConversion<string>();
+                
             });
 
             // MeetingEntity mapping

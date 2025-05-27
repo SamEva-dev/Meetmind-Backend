@@ -3,6 +3,8 @@ namespace Meetmind.Application.Dto;
 
 public class TranscriptionDto
 {
+    public Guid Id { get; set; }
+    public Guid MeetingId { get; set; }
     public string Text { get; set; }
 
     public string Tilte { get; set; }

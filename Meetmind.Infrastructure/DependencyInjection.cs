@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using AutoMapper.Extensions.EnumMapping;
 using AutoMapper.EquivalencyExpression;
 using Meetmind.Infrastructure.Services.Summarize;
+using Meetmind.Application.Services.Notification;
 
 namespace Meetmind.Infrastructure
 {
@@ -45,6 +46,7 @@ namespace Meetmind.Infrastructure
 
             services.AddHostedService<CalendarWorker>();
             services.AddHostedService<TranscriptionWorker>();
+            services.AddHostedService<SummarizeWorker>();
 
             //services.AddGrpcClient<WhisperTranscription.WhisperTranscriptionClient>(options =>
             //{

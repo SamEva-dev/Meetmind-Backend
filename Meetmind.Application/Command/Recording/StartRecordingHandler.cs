@@ -1,8 +1,10 @@
 ﻿
 using AutoMapper;
 using MediatR;
+using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -14,11 +16,13 @@ public sealed class StartRecordingHandler : IRequestHandler<StartRecordingComman
     private readonly IUnitOfWork _uow;
     private readonly ILogger<StartRecordingHandler> _logger;
     private readonly IAudioRecordingService _audioService;
+    private readonly INotificationService _recordingNotifierService;
     private readonly IMapper _mapper;
 
     public StartRecordingHandler(IMeetingRepository repo, 
         IUnitOfWork uow,
         IAudioRecordingService audioService,
+        INotificationService recordingNotifierService,
         IMapper mapper, 
         ILogger<StartRecordingHandler> logger)
     {
@@ -27,6 +31,7 @@ public sealed class StartRecordingHandler : IRequestHandler<StartRecordingComman
         _mapper = mapper;
         _logger = logger;
         _audioService = audioService;
+        _recordingNotifierService = recordingNotifierService;
     }
 
     public async Task<Unit> Handle(StartRecordingCommand request, CancellationToken cancellationToken)
@@ -46,6 +51,9 @@ public sealed class StartRecordingHandler : IRequestHandler<StartRecordingComman
         await _audioService.StartAsync(meeting.Id, meeting.Title, cancellationToken);
 
         await _uow.SaveChangesAsync(cancellationToken);
+
+        await _recordingNotifierService.NotifyRecordingStartedAsync(
+            _mapper.Map<MeetingDto>(meeting), cancellationToken);
 
         return Unit.Value;
     }

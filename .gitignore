@@ -155,6 +155,8 @@ coverage*.info
 *.coverage
 *.coveragexml
 
+Meetmind.Infrastructure/Resources/*
+
 # NCrunch
 _NCrunch_*
 .NCrunch_*
@@ -401,3 +403,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+

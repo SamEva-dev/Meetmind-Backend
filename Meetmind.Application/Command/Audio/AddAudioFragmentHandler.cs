@@ -2,10 +2,9 @@
 using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Entities;
-using Meetmind.Domain.Events.Interface;
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph.Models;
 
 namespace Meetmind.Application.Command.Audio;
 
@@ -52,7 +51,7 @@ public class AddAudioFragmentHandler : IRequestHandler<AddAudioFragmentCommand, 
         await _unitOfWork.SaveChangesAsync();
 
         // Option : notifie SignalR progression
-        await _notificationService.NotifyFragmentUploaded(request.MeetingId, request.SequenceNumber);
+        await _notificationService.NotifyFragmentUploadedAsync(request.MeetingId, request.SequenceNumber, cancellationToken);
 
         return Unit.Value;
     }

@@ -1,5 +1,7 @@
-﻿using Meetmind.Application.Services;
-using Meetmind.Domain.Entities;
+﻿using AutoMapper;
+using Meetmind.Application.Dto;
+using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Enums;
 using Meetmind.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +15,16 @@ public sealed class TranscriptionWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<TranscriptionWorker> _logger;
+    private readonly IMapper _mapper;
 
-    public TranscriptionWorker(IServiceScopeFactory scopeFactory,
+    public TranscriptionWorker(
+        IServiceScopeFactory scopeFactory,
+        IMapper mapper,
         ILogger<TranscriptionWorker> logger)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _mapper = mapper;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,6 +48,7 @@ public sealed class TranscriptionWorker : BackgroundService
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MeetMindDbContext>();
+        var _notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
         var _transcriptionService = scope.ServiceProvider.GetRequiredService<ITranscriptionService>();
 
         var test = await db.Meetings.ToListAsync(ct);
@@ -54,17 +61,20 @@ public sealed class TranscriptionWorker : BackgroundService
             try
             {
                 meeting.MarkTranscriptionProcessing();
+                await _notificationService.NotifyTranscriptionProcessingAsync(_mapper.Map<MeetingDto>(meeting), ct);
                 await db.SaveChangesAsync(ct);
 
                 await _transcriptionService.TranscribeAsync(meeting, ct);
 
                 meeting.MarkTranscriptionCompleted();
                 meeting.QueueSummary();
+                await _notificationService.NotifyTranscriptionCompletedAsync(_mapper.Map<MeetingDto>(meeting), ct);
                 _logger.LogInformation("✅ Transcription complétée pour {Id}", meeting.Id);
             }
             catch (Exception ex)
             {
                 meeting.MarkTranscriptionFailed();
+                await _notificationService.NotifyTranscriptionErrorAsync(_mapper.Map<MeetingDto>(meeting), ex.Message, ct);
                 _logger.LogError(ex, "❌ Échec de la transcription pour {Id}", meeting.Id);
             }
 

@@ -33,9 +33,9 @@ public class AudioTranscriptionService
             using var audioStream = File.OpenRead(meeting.AudioPath);
 
             var setting = await _db.Settings.AsNoTracking().FirstOrDefaultAsync(ct);
-
+            var test = setting.Language.ToString();
             form.Add(new StreamContent(audioStream), "audio", Path.GetFileName(meeting.AudioPath));
-            form.Add(new StringContent(setting.Language ?? ""), "language");
+            form.Add(new StringContent(setting.Language.ToString()), "language");
             form.Add(new StringContent(EnumHelper.GetEnumValueForPython(setting.WhisperModelType)), "whisper_model");
             form.Add(new StringContent(EnumHelper.GetEnumValueForPython(setting.WhisperDeviceType)), "whisper_device");
             form.Add(new StringContent(EnumHelper.GetEnumValueForPython(setting.WhisperComputeType)), "whisper_compute_type");

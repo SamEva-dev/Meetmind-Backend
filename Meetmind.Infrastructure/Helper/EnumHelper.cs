@@ -18,7 +18,7 @@ public static class EnumHelper
             WhisperDeviceType.Cpu => "cpu",
             WhisperDeviceType.Cuda => "cuda",
             WhisperDeviceType.Auto => "auto",
-            WhisperComputeType.Default => "default",
+            WhisperComputeType.Auto => "default",
             WhisperComputeType.Int8 => "int8",
             WhisperComputeType.Int8Float16 => "int8_float16",
             WhisperComputeType.Int16 => "int16",

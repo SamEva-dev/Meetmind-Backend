@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
-using Meetmind.Domain.Events.Interface;
+using Meetmind.Application.Services.Notification;
 using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Application.Command.Meetings
@@ -40,6 +40,8 @@ namespace Meetmind.Application.Command.Meetings
 
             await _meetingRepository.DeleteAsync(meeting, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
+
+            await _meetingNotifierService.NotifyMeetingDeletedAsync(meeting.Id, cancellationToken);
 
             return Unit.Value;
         }

@@ -5,7 +5,7 @@ namespace Meetmind.Application.Dto
 {
     public class SettingsDto
     {
-        public string Language { get; set; }
+        public LanguageCode Language { get; set; }
         public bool AutoStartRecord { get; set; } = false;
         public bool AutoStopRecord { get; set; } = false;
         public bool AutoTranscript { get; set; } = false;
@@ -27,5 +27,6 @@ namespace Meetmind.Application.Dto
         public WhisperComputeType WhisperComputeType { get; set; }
         public DiarizationModelType DiarizationModelType { get; set; }
         public DiarizationModelType SummarizeModelType { get; set; }
+        public SummarizeDetailLevel SummarizeDetailLevel { get; set; }
     }
 }

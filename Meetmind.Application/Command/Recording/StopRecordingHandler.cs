@@ -1,8 +1,10 @@
 ﻿
 using AutoMapper;
 using MediatR;
+using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -14,11 +16,13 @@ public sealed class StopRecordingHandler : IRequestHandler<StopRecordingCommand,
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IAudioRecordingService _audioService;
+    private readonly INotificationService _recordingNotifierService;
     private readonly ILogger<StopRecordingHandler> _logger;
 
     public StopRecordingHandler(IMeetingRepository repo, 
         IUnitOfWork unitOfWork,
-        IAudioRecordingService audioService, 
+        IAudioRecordingService audioService,
+        INotificationService recordingNotifierService,
         IMapper mapper, ILogger<StopRecordingHandler> logger)
     {
         _repo = repo;
@@ -26,6 +30,7 @@ public sealed class StopRecordingHandler : IRequestHandler<StopRecordingCommand,
         _mapper = mapper;
         _logger = logger;
         _audioService = audioService;
+        _recordingNotifierService = recordingNotifierService;
     }
 
     public async Task<Unit> Handle(StopRecordingCommand request, CancellationToken cancellationToken)
@@ -46,6 +51,9 @@ public sealed class StopRecordingHandler : IRequestHandler<StopRecordingCommand,
         meeting.AttachAudio(audioPath);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _recordingNotifierService.NotifyRecordingStoppedAsync(
+            _mapper.Map<MeetingDto>(meeting), cancellationToken);
 
         _logger.LogInformation("Recording stopped for meeting {MeetingId} ({Path})", meeting.Id, audioPath);
 

@@ -1,4 +1,7 @@
-﻿using Meetmind.Application.Services;
+﻿using AutoMapper;
+using Meetmind.Application.Dto;
+using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Enums;
 using Meetmind.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +15,16 @@ internal class SummarizeWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<TranscriptionWorker> _logger;
+    private readonly IMapper _mapper;
 
-    public SummarizeWorker(IServiceScopeFactory scopeFactory,
+    public SummarizeWorker(
+        IServiceScopeFactory scopeFactory,
+        IMapper mapper,
         ILogger<TranscriptionWorker> logger)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _mapper = mapper;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -41,6 +48,7 @@ internal class SummarizeWorker : BackgroundService
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MeetMindDbContext>();
+        var _notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
         var _summService = scope.ServiceProvider.GetRequiredService<ISummarizeService>();
 
         var test = await db.Meetings.ToListAsync(ct);
@@ -53,16 +61,19 @@ internal class SummarizeWorker : BackgroundService
             try
             {
                 meeting.MarkSummaryProcessing();
+                await _notificationService.NotifySummaryProcessingAsync(_mapper.Map<MeetingDto>(meeting), ct);
                 await db.SaveChangesAsync(ct);
 
                 var summarizePath = await _summService.SummarizeAsync(meeting, ct);
 
                 meeting.MarkSummaryCompleted(summarizePath);
+               await  _notificationService.NotifySummaryCompletedAsync(_mapper.Map<MeetingDto>(meeting), ct);
                 _logger.LogInformation("✅ Résumé complétée pour {Id}", meeting.Id);
             }
             catch (Exception ex)
             {
                 meeting.MarkSummaryFailed();
+                await _notificationService.NotifySummaryFailedAsync(_mapper.Map<MeetingDto>(meeting), ct);
                 _logger.LogError(ex, "❌ Échec du résumé pour {Id}", meeting.Id);
             }
 

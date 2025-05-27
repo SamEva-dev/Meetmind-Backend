@@ -64,7 +64,8 @@ namespace Meetmind.Presentation
                 .SetIsOriginAllowedToAllowWildcardSubdomains()
                 .WithOrigins()
                 .AllowAnyMethod()
-                .AllowAnyHeader());
+                .AllowAnyHeader()
+                .AllowCredentials());
             });
 
             services.AddControllers().AddJsonOptions(options =>
@@ -116,7 +117,12 @@ namespace Meetmind.Presentation
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<SettingsHub>("/hubs/settings");
-                endpoints.MapHub<MeetingHub>("/hubs/meeting");
+                endpoints.MapHub<MeetingHub>("/hubs/meetings");
+                endpoints.MapHub<RecordingHub>("/hubs/recording");
+                endpoints.MapHub<AudioHub>("/hubs/audio");
+                endpoints.MapHub<TranscriptHub>("/hubs/transcipt");
+                endpoints.MapHub<SummaryHub>("/hubs/summary");
+
                 endpoints.MapGet("/status/python", () =>
                 {
                     return Results.Ok(new

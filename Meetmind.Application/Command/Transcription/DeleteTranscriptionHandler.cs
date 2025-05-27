@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Application.Command.Transcription
@@ -10,12 +11,18 @@ namespace Meetmind.Application.Command.Transcription
         private readonly ITranscriptionRepository _repo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<DeleteTranscriptionHandler> _logger;
+        private readonly INotificationService _notificationService;
 
-        public DeleteTranscriptionHandler(ITranscriptionRepository repo, IUnitOfWork unitOfWork, ILogger<DeleteTranscriptionHandler> logger)
+        public DeleteTranscriptionHandler(
+            ITranscriptionRepository repo, 
+            IUnitOfWork unitOfWork,
+            INotificationService notificationService,
+            ILogger<DeleteTranscriptionHandler> logger)
         {
             _repo = repo;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _notificationService = notificationService;
         }
 
         public async Task<Unit> Handle(DeleteTranscriptionCommand request, CancellationToken cancellationToken)
@@ -29,6 +36,8 @@ namespace Meetmind.Application.Command.Transcription
             }
             await _repo.DeleteTransition(transcription, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _notificationService.NotifyTranscriptionDeletedAsync(cancellationToken);
 
             return Unit.Value;
         }

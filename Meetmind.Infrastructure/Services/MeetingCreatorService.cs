@@ -1,6 +1,7 @@
 ﻿
 using System.Threading;
 using MediatR;
+using Meetmind.Application.Command.Meetings;
 using Meetmind.Application.Command.Recording;
 using Meetmind.Application.Connectors;
 using Meetmind.Application.Dto;
@@ -24,11 +25,13 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
     private readonly IHubContext<MeetingHub> _hub;
     private readonly MeetMindDbContext _db;
     private readonly ILogger<MeetingCreatorService> _logger;
+    private readonly IMediator _mediator;
 
     public MeetingCreatorService(IEnumerable<ICalendarConnector> calendarConnectors, 
         IDateTimeProvider clock, 
         IHubContext<MeetingHub> hub, 
-        MeetMindDbContext db, 
+        MeetMindDbContext db,
+        IMediator mediator,
         ILogger<MeetingCreatorService> logger)
     {
         _calendarConnectors = calendarConnectors;
@@ -36,6 +39,7 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
         _hub = hub;
         _db = db;
         _logger = logger;
+        _mediator = mediator;
     }
 
     public async Task<List<CalendarMeetingDto>> GetTodayMeetingsFromCalendarsAsync(DateTime utcNow, CancellationToken token)
@@ -94,36 +98,8 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
 
         if (exists) return true;
 
-        var meeting = new MeetingEntity(dto.Title, dto.Start, dto.End, dto.ExternalId, dto.Source);
-        _db.Meetings.Add(meeting);
+        await _mediator.Send(new CreateMeetingCommand(dto.Title, dto.Start, dto.End, dto.ExternalId, dto.Source), token);
 
-        // projection read model
-        _db.MeetingReadModels.Add(new MeetingReadModel
-        {
-            Id = meeting.Id,
-            Title = meeting.Title,
-            StartUtc = meeting.StartUtc,
-            EndUtc = meeting.EndUtc,
-            Start = meeting.Start,
-            End = meeting.End,
-            State = meeting.State.ToString(),
-            TranscriptPath = null,
-            SummaryPath = null,
-            ExternalId = dto.ExternalId,
-            ExternalSource = dto.Source
-        });
-
-        // mise à jour du log en mémoire
-        var lastLog = _db.CalendarSyncLogs
-            .Local
-            .Where(l => l.Source == dto.Source)
-            .OrderByDescending(l => l.TimestampUtc)
-            .FirstOrDefault();
-
-        if (lastLog != null)
-            lastLog.MeetingsCreated++;
-
-        await _db.SaveChangesAsync(token);
         return true;
     }
 

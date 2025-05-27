@@ -1,8 +1,10 @@
 ﻿
+using AutoMapper;
 using MediatR;
-using Meetmind.Application.Helper;
+using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Application.Command.Audio;
@@ -11,21 +13,24 @@ public class DeleteAudioHandler : IRequestHandler<DeleteAudioCommand, Unit>
 {
     private readonly IAudioFragmentRepository _audioFragmentRepository;
     private readonly IMeetingRepository _meetingRepository;
-    private readonly ITranscriptionRepository _transcriptionRepository;
+    private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteAudioHandler> _logger;
+    private readonly IMapper _mapper;
 
     public DeleteAudioHandler(IAudioFragmentRepository audioFragmentRepository, 
-        IMeetingRepository meetingRepository, 
-        ITranscriptionRepository transcriptionRepository, 
-        IUnitOfWork unitOfWork, 
+        IMeetingRepository meetingRepository,
+        INotificationService notificationService,
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
         ILogger<DeleteAudioHandler> logger)
     {
         _audioFragmentRepository = audioFragmentRepository;
         _meetingRepository = meetingRepository;
-        _transcriptionRepository = transcriptionRepository;
+        _notificationService = notificationService;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(DeleteAudioCommand request, CancellationToken cancellationToken)
@@ -66,6 +71,8 @@ public class DeleteAudioHandler : IRequestHandler<DeleteAudioCommand, Unit>
         meeting.DetachAudio();
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _notificationService.NotifyAudioDeletedAsync(_mapper.Map<MeetingDto>(meeting), cancellationToken);
 
         return Unit.Value;
 
