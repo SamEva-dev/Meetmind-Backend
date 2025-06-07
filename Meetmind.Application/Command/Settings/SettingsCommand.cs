@@ -21,6 +21,7 @@ public record SettingsCommand: IRequest<SettingsDto>
     public bool UseOutlookCalendar { get; set; }
     public bool AutoCancelMeeting { get; set; }
     public bool AutoDeleteMeeting { get; set; }
+    public bool LiveTranscriptionEnabled { get; set; }
     public TranscriptionType TranscriptionType { get; set; }
     public AudioRecordingType AudioRecordingType { get; set; }
     public WhisperModelType WhisperModelType { get; set; }

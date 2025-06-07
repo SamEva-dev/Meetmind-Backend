@@ -95,8 +95,8 @@ public class MeetingEntity : AggregateRoot
 
     public void QueueTranscription()
     {
-        if (TranscriptState != TranscriptState.NotRequested)
-            throw new InvalidOperationException("Transcription already queued or processed.");
+        //if (TranscriptState != TranscriptState.NotRequested)
+        //    throw new InvalidOperationException("Transcription already queued or processed.");
         TranscriptState = TranscriptState.Queued;
     }
 

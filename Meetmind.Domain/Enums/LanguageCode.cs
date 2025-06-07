@@ -2,6 +2,7 @@
 
 public enum LanguageCode
 {
+    Auto,
     Fr, // Français (fr)
     En, // Anglais (en)
     Es, // Espagnol (es)

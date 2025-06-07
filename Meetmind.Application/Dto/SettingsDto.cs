@@ -20,6 +20,7 @@ namespace Meetmind.Application.Dto
         public bool AutoCancelMeeting { get; set; }
         public bool AutoDeleteMeeting { get; set; }
         public bool AutoCleanOrphanFragments { get; set; }
+        public bool LiveTranscriptionEnabled { get; set; }
         public TranscriptionType TranscriptionType { get; set; }
         public AudioRecordingType AudioRecordingType { get; set; }
         public WhisperModelType WhisperModelType { get; set; }

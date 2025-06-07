@@ -39,6 +39,14 @@ namespace Meetmind.Application.Command.Settings
 
             await _notification.NotifySettingsUpdatedAsync(settingEntity, cancellationToken);
 
+            await _notification.NotifyMeetingAsync(new Domain.Models.Notifications
+            {
+                MeetingId = settingEntity.Id,
+                Title = "Settings Updated",
+                Message = $"Settings have been updated successfully.",
+                Time = DateTime.UtcNow
+            }, cancellationToken);
+
             return _mapper.Map<SettingsDto>(settingEntity);
         }
     }

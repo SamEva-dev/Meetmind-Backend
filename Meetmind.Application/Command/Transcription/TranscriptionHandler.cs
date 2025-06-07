@@ -51,6 +51,13 @@ public sealed class TranscriptionHandler : IRequestHandler<TranscriptionCommand,
         await _uow.SaveChangesAsync(cancellationToken);
 
         await _notificationService.NotifyTranscriptionQueuedAsync(_mapper.Map<MeetingDto>(meeting), cancellationToken);
+        await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = meeting.Id,
+            Title = meeting.Title,
+            Message = $"Transcription for meeting {meeting.Id} has been queued",
+            Time = DateTime.UtcNow
+        }, cancellationToken);
 
         return Unit.Value;
     }

@@ -122,6 +122,7 @@ namespace Meetmind.Presentation
                 endpoints.MapHub<AudioHub>("/hubs/audio");
                 endpoints.MapHub<TranscriptHub>("/hubs/transcipt");
                 endpoints.MapHub<SummaryHub>("/hubs/summary");
+                endpoints.MapHub<NotificationHub>("/hubs/Notification");
 
                 endpoints.MapGet("/status/python", () =>
                 {

@@ -43,6 +43,14 @@ public sealed class CancelMeetingHandler : IRequestHandler<CancelMeetingCommand,
 
         await _meetingNotifierService.NotifyMeetingCancelledAsync(meeting.Id, cancellationToken);
 
+        await _meetingNotifierService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = meeting.Id,
+            Title = meeting.Title,
+            Message = $"Meeting {meeting.Id} has been cancelled",
+            Time = DateTime.UtcNow
+        }, cancellationToken);
+
         _logger.LogInformation("🗑️ Meeting {Id} cancelled successfully", meeting.Id);
         return Unit.Value;
     }

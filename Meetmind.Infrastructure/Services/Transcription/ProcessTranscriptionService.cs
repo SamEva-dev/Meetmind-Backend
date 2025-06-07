@@ -1,17 +1,8 @@
 ﻿using Meetmind.Application.Dto;
-using System.Diagnostics;
 using Meetmind.Application.Services;
 using Meetmind.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using Meetmind.Domain.Entities;
-using Meetmind.Infrastructure.Database;
-using Meetmind.Infrastructure.Repositories;
-using Microsoft.Graph.Models.TermStore;
-using Newtonsoft.Json.Linq;
-using System.Net.Http;
-using Microsoft.EntityFrameworkCore;
-using Meetmind.Infrastructure.Helper;
 
 namespace Meetmind.Infrastructure.Services.Transcription;
 

@@ -55,6 +55,14 @@ public sealed class StopRecordingHandler : IRequestHandler<StopRecordingCommand,
         await _recordingNotifierService.NotifyRecordingStoppedAsync(
             _mapper.Map<MeetingDto>(meeting), cancellationToken);
 
+        await _recordingNotifierService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = meeting.Id,
+            Title = meeting.Title,
+            Message = $"Recording for meeting {meeting.Id} has been stopped",
+            Time = DateTime.UtcNow
+        }, cancellationToken);
+
         _logger.LogInformation("Recording stopped for meeting {MeetingId} ({Path})", meeting.Id, audioPath);
 
 

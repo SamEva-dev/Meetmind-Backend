@@ -1,12 +1,22 @@
 ﻿
+using System;
 using System.Collections.Concurrent;
+using System.Net.Http;
+using System.Text.Json;
+using Azure.Core;
+using Google.Apis.Calendar.v3.Data;
 using MediatR;
+using Meetmind.Application.Dto;
 using Meetmind.Application.Helper;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Entities;
 using Meetmind.Domain.Enums;
+using Meetmind.Domain.Models;
 using Meetmind.Infrastructure.Database;
 using Meetmind.Infrastructure.Helper;
+using Meetmind.Infrastructure.Services.Transcription;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;
 using NAudio.Wave;
@@ -17,6 +27,18 @@ public class NativeAudioRecordingService : IAudioRecordingService
 {
     private readonly ILogger<NativeAudioRecordingService> _logger;
     private readonly MeetMindDbContext _db;
+    private readonly INotificationService _recordingNotifierService;
+    private readonly AudioTranscriptionService _audioTranscriptionService;
+    private readonly long TAILLE_CHUNK_EN_BYTES = 16000 * 2 * 5; // 5 secondes en mono 16kHz (16000 échantillons/s, 2 octets par échantillon)
+
+    private WaveInEvent? _waveIn;
+    private WaveFileWriter? _currentWriter;
+    private System.Timers.Timer? _chunkTimer;
+    private string? _currentChunkPath;
+    private int _chunkIndex = 0;
+    private bool _liveMode = false;
+    private readonly object _writerLock = new object();
+
 
     public AudioRecordingType BackendType => AudioRecordingType.Native;
 
@@ -24,10 +46,16 @@ public class NativeAudioRecordingService : IAudioRecordingService
     private static readonly ConcurrentDictionary<Guid, (WaveInEvent Recorder, WaveFileWriter Writer)> _sessions = new();
     private static readonly ConcurrentDictionary<Guid, List<string>> _audioFragments = new();
 
-    public NativeAudioRecordingService(MeetMindDbContext db, ILogger<NativeAudioRecordingService> logger)
+    public NativeAudioRecordingService(MeetMindDbContext db,
+        ILogger<NativeAudioRecordingService> logger,
+        INotificationService recordingNotifierService,
+        AudioTranscriptionService audioTranscriptionService
+        )
     {
         _logger = logger;
         _db = db;
+        _recordingNotifierService = recordingNotifierService;
+        _audioTranscriptionService = audioTranscriptionService;
     }
 
     public Task StartAsync(Guid meetingId, string filePath, CancellationToken ct)
@@ -42,27 +70,71 @@ public class NativeAudioRecordingService : IAudioRecordingService
         try
         {
             var audioPath = AudioFileHelper.GenerateAudioPath(title, meetingId);
-            
+
             if (!_audioFragments.TryGetValue(meetingId, out var fragments))
                 throw new InvalidOperationException("Session non initialisée");
+
+            var settings = await _db.Settings.FirstOrDefaultAsync(ct);
 
             var directory = Path.GetDirectoryName(audioPath)!;
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
             fragments.Add(audioPath);
 
-            var waveIn = new WaveInEvent { WaveFormat = new WaveFormat(16000, 1) };
-            var writer = new WaveFileWriter(audioPath, waveIn.WaveFormat);
+            _liveMode = settings != null && settings.LiveTranscriptionEnabled;
 
-            waveIn.DataAvailable += (s, a) => { writer.Write(a.Buffer, 0, a.BytesRecorded); writer.Flush(); };
-            waveIn.RecordingStopped += (s, a) => { writer?.Dispose(); waveIn?.Dispose(); };
+            _waveIn = new WaveInEvent { WaveFormat = new WaveFormat(16000, 1) };
 
-            if (!_sessions.TryAdd(meetingId, (waveIn, writer)))
+            if (_liveMode)
+            {
+                // --- MODE LIVE : un fichier wav par chunk ---
+                StartNextLiveChunk(meetingId, title);
+
+                _waveIn.DataAvailable += (s, a) =>
+                {
+                    if (_currentWriter != null)
+                    {
+                        _currentWriter?.Write(a.Buffer, 0, a.BytesRecorded);
+                        _currentWriter?.Flush();
+                    }
+                    
+                };
+
+                // Timer pour couper le chunk toutes les X secondes
+                _chunkTimer = new System.Timers.Timer(9000); // ex: 3s
+                _chunkTimer.Elapsed += async (s, e) =>
+                {
+                    await CloseAndTranscribeCurrentChunkAsync(meetingId, settings, ct);
+                    StartNextLiveChunk(meetingId, title);
+                };
+                _chunkTimer.Start();
+            }
+            else
+            {
+                // --- MODE CLASSIQUE : un seul fichier wav ---
+                _currentChunkPath = audioPath;
+                _currentWriter = new WaveFileWriter(audioPath, _waveIn.WaveFormat);
+                _waveIn.DataAvailable += (s, a) => { _currentWriter.Write(a.Buffer, 0, a.BytesRecorded); _currentWriter.Flush(); };
+            }
+
+            _waveIn.RecordingStopped += async (s, a) =>
+            {
+                // En mode live, termine le chunk courant et timer
+                if (_liveMode)
+                {
+                    _chunkTimer?.Stop();
+                    await CloseAndTranscribeCurrentChunkAsync(meetingId, settings, ct);
+                }
+                // Dans tous les cas, ferme writer et waveIn
+                _currentWriter?.Dispose();
+                _waveIn?.Dispose();
+            };
+
+            if (!_sessions.TryAdd(meetingId, (_waveIn, _currentWriter!)))
             {
                 _logger.LogWarning("Session d'enregistrement déjà existante pour la réunion {Id}", meetingId);
-                // On libère le writer et le waveIn si l'ajout échoue
-                writer?.Dispose();
-                waveIn?.Dispose();
+                _currentWriter?.Dispose();
+                _waveIn?.Dispose();
                 if (_audioFragments.TryGetValue(meetingId, out var fragmentsList))
                     fragmentsList.Remove(audioPath);
                 else
@@ -70,8 +142,7 @@ public class NativeAudioRecordingService : IAudioRecordingService
                 throw new InvalidOperationException("Erreur lors de l'ajout de la session d'enregistrement.");
             }
 
-
-            waveIn.StartRecording();
+            _waveIn.StartRecording();
 
             var metadata = new AudioMetadata
             {
@@ -84,7 +155,6 @@ public class NativeAudioRecordingService : IAudioRecordingService
             await _db.SaveChangesAsync(ct);
 
             await LogEventAsync(meetingId, "Start", $"AudioPath={audioPath}");
-
         }
         catch (Exception ex)
         {
@@ -92,7 +162,6 @@ public class NativeAudioRecordingService : IAudioRecordingService
             await LogEventAsync(meetingId, "Error", ex.Message);
         }
     }
-
     public async Task PauseAsync(Guid meetingId, CancellationToken ct)
     {
         try
@@ -105,6 +174,7 @@ public class NativeAudioRecordingService : IAudioRecordingService
             }
             var (waveIn, writer) = session;
             waveIn.StopRecording();
+            
             await LogEventAsync(meetingId, "Pause", null);
         }
         catch (Exception ex)
@@ -217,4 +287,33 @@ public class NativeAudioRecordingService : IAudioRecordingService
         _db.AudioEventLogs.Add(log);
         await _db.SaveChangesAsync();
     }
+
+
+    private void StartNextLiveChunk(Guid meetingId, string title)
+    {
+        lock (_writerLock)
+        {
+_currentWriter?.Dispose();
+        _currentChunkPath = AudioFileHelper.GenerateAudioPath($"{title}{++_chunkIndex}", meetingId);
+        _currentWriter = new WaveFileWriter(_currentChunkPath, new WaveFormat(16000, 1));
+        }
+            
+    }
+
+    private async Task CloseAndTranscribeCurrentChunkAsync(Guid meetingId, SettingsEntity settings, CancellationToken ct)
+    {
+        lock (_writerLock)
+        {
+_currentWriter?.Flush();
+        _currentWriter?.Dispose();
+
+        // Traite le chunk (envoie à l'API de transcription live, concatène en base, notifie SignalR)
+        
+        }
+            if (!string.IsNullOrEmpty(_currentChunkPath))
+        {
+            await _audioTranscriptionService.ProcessChunkAsync(meetingId, _currentChunkPath, settings, ct);
+        }
+    }
+
 }

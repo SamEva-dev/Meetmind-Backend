@@ -62,12 +62,26 @@ internal class SummarizeWorker : BackgroundService
             {
                 meeting.MarkSummaryProcessing();
                 await _notificationService.NotifySummaryProcessingAsync(_mapper.Map<MeetingDto>(meeting), ct);
+                await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+                {
+                    MeetingId = meeting.Id,
+                    Title = meeting.Title,
+                    Message = $"Résumé en cours pour la réunion {meeting.Id}",
+                    Time = DateTime.UtcNow
+                }, ct);
                 await db.SaveChangesAsync(ct);
 
                 var summarizePath = await _summService.SummarizeAsync(meeting, ct);
 
                 meeting.MarkSummaryCompleted(summarizePath);
                await  _notificationService.NotifySummaryCompletedAsync(_mapper.Map<MeetingDto>(meeting), ct);
+                await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+                {
+                    MeetingId = meeting.Id,
+                    Title = meeting.Title,
+                    Message = $"Résumé complété pour la réunion {meeting.Id}",
+                    Time = DateTime.UtcNow
+                }, ct);
                 _logger.LogInformation("✅ Résumé complétée pour {Id}", meeting.Id);
             }
             catch (Exception ex)

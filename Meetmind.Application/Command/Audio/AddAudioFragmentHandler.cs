@@ -52,6 +52,14 @@ public class AddAudioFragmentHandler : IRequestHandler<AddAudioFragmentCommand, 
 
         // Option : notifie SignalR progression
         await _notificationService.NotifyFragmentUploadedAsync(request.MeetingId, request.SequenceNumber, cancellationToken);
+        await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = request.MeetingId,
+            Title = "Audio frame",
+            Message = $"Audio fragment {request.SequenceNumber} uploaded for meeting {request.MeetingId}",
+            Time = DateTime.UtcNow
+
+        }, cancellationToken);
 
         return Unit.Value;
     }

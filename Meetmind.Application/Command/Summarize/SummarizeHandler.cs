@@ -4,6 +4,7 @@ using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
 using Meetmind.Application.Services.Notification;
+using Meetmind.Domain.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Meetmind.Application.Command.Summarize;
@@ -55,6 +56,14 @@ public class SummarizeHandler : IRequestHandler<SummarizeCommand, Unit>
         _logger.LogInformation("Meeting {MeetingId} queued for summarization", request.MeetingId);
 
         await _notificationService.NotifySummaryQueuedAsync(_mapper.Map<MeetingDto>(meeting), cancellationToken);
+
+        await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = meeting.Id,
+            Title = meeting.Title,
+            Message = $"Summarization for meeting {meeting.Id} has been queued",
+            Time = DateTime.UtcNow
+        }, cancellationToken);
 
         return Unit.Value;
     }

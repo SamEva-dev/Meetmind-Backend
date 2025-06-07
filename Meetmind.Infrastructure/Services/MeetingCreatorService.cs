@@ -7,6 +7,7 @@ using Meetmind.Application.Connectors;
 using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Entities;
 using Meetmind.Domain.Enums;
 using Meetmind.Domain.Models;
@@ -149,6 +150,13 @@ public sealed class MeetingCreatorService : IMeetingCreatorService
         {
             MeetingId = meetingId,
             Message = message
+        });
+        await _hub.Clients.All.SendAsync("NotificationMeeting",new Notifications
+        {
+            MeetingId = meetingId,
+            Title = "Rappel de réunion",
+            Message = message,
+            Time = _clock.UtcNow
         });
     }
 }

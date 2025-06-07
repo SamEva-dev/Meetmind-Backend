@@ -43,6 +43,14 @@ namespace Meetmind.Application.Command.Meetings
 
             await _meetingNotifierService.NotifyMeetingDeletedAsync(meeting.Id, cancellationToken);
 
+            await _meetingNotifierService.NotifyMeetingAsync(new Domain.Models.Notifications
+            {
+                MeetingId = meeting.Id,
+                Title = meeting.Title,
+                Message = $"Meeting {meeting.Id} has been deleted",
+                Time = _clock.UtcNow
+            }, cancellationToken);
+
             return Unit.Value;
         }
     }

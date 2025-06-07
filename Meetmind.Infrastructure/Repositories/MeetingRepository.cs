@@ -1,4 +1,6 @@
 ﻿
+using System.Linq;
+using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Google.Apis.Calendar.v3.Data;
@@ -84,5 +86,64 @@ public class MeetingRepository : IMeetingRepository
             lastLog.MeetingsCreated++;
 
         return meeting.Id;
+    }
+
+    public Task<MeetingDto?> GetAllAsync(int? count, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<MeetingEntity>> ListAsync(Expression<Func<MeetingEntity, bool>>? filter = null, bool tracking = false)
+    {
+        Expression<Func<MeetingEntity, bool>> predicate = filter == null ? t => true : _mapper.Map<Expression<Func<MeetingEntity, bool>>>(filter);
+
+        var query = _dbContext.Set<MeetingEntity>()
+            .Where(predicate)
+            .OrderByDescending(m => m.EndUtc);
+
+        return tracking ? await query.ToListAsync() : await query.AsNoTracking().ToListAsync();
+    }
+
+    public async Task<MeetingEntity?> SingleOrDefaultAsync(Expression<Func<MeetingEntity, bool>> filter, bool tracking = false)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<bool> AnyAsync(Expression<Func<MeetingEntity, bool>> filter)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<PagedResult<MeetingEntity>> ListPagedAsync(int page, int pageSize, Expression<Func<MeetingEntity, bool>>? filter = null, Func<IQueryable<MeetingEntity>, IOrderedQueryable<MeetingEntity>>? orderBy = null, bool tracking = false)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        IQueryable<MeetingEntity> query = _dbContext.Set<MeetingEntity>();
+
+        if (filter != null)
+            query = query.Where(filter);
+
+        var totalCount = await query.CountAsync();
+
+        if (orderBy != null)
+            query = orderBy(query);
+
+        if (!tracking)
+            query = query.AsNoTracking();
+
+        var items = await query
+            .OrderByDescending(m => m.EndUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<MeetingEntity>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 }

@@ -55,6 +55,14 @@ public sealed class StartRecordingHandler : IRequestHandler<StartRecordingComman
         await _recordingNotifierService.NotifyRecordingStartedAsync(
             _mapper.Map<MeetingDto>(meeting), cancellationToken);
 
+        await _recordingNotifierService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = meeting.Id,
+            Title = meeting.Title,
+            Message = $"Recording for meeting {meeting.Id} has started",
+            Time = DateTime.UtcNow
+        }, cancellationToken);
+
         return Unit.Value;
     }
 }

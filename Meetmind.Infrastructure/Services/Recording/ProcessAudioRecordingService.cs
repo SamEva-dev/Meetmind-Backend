@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using Meetmind.Application.Helper;
 using Meetmind.Application.Services;
 using Meetmind.Domain.Enums;
 
@@ -18,17 +19,20 @@ public class ProcessAudioRecordingService : IAudioRecordingService
         await StartFragment(meetingId, filePath, ct);
     }
 
-    private Task StartFragment(Guid meetingId, string filePath, CancellationToken ct)
+    private Task StartFragment(Guid meetingId, string title, CancellationToken ct)
     {
-        var fragmentPath = Path.Combine(
-            Path.GetDirectoryName(filePath)!,
-            $"{Path.GetFileNameWithoutExtension(filePath)}_{DateTime.UtcNow:HHmmssfff}.wav"
-        );
+        var audioPath = AudioFileHelper.GenerateAudioPath(title, meetingId);
+
         if (!_audioFragments.TryGetValue(meetingId, out var fragments))
             throw new InvalidOperationException("Session non initialisée");
-        fragments.Add(fragmentPath);
 
-        var ffmpegCmd = $"-f dshow -i audio=\"Microphone (Realtek Audio)\" -acodec pcm_s16le -ar 16000 -ac 1 \"{fragmentPath}\" -y";
+        var directory = Path.GetDirectoryName(audioPath)!;
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+
+        fragments.Add(audioPath);
+
+        var ffmpegCmd = $"-f dshow -i audio=\"Microphone (Realtek Audio)\" -acodec pcm_s16le -ar 16000 -ac 1 \"{audioPath}\" -y";
         var psi = new ProcessStartInfo
         {
             FileName = "ffmpeg",

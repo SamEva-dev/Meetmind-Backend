@@ -50,6 +50,14 @@ public sealed class PauseRecordingHandler : IRequestHandler<PauseRecordingComman
         await _recordingNotifierService.NotifyRecordingPausedAsync(
             _mapper.Map<MeetingDto>(meeting), ct);
 
+        await _recordingNotifierService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = meeting.Id,
+            Title = meeting.Title,
+            Message = $"Recording for meeting {meeting.Id} has been paused",
+            Time = DateTime.UtcNow
+        }, ct);
+
         return Unit.Value;
     }
 }

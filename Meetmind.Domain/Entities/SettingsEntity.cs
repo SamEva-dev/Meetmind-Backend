@@ -8,7 +8,7 @@ namespace Meetmind.Domain.Entities;
 public sealed class SettingsEntity : AggregateRoot
 {
     private SettingsEntity() { }
-    public LanguageCode Language { get; set; } = LanguageCode.En;
+    public LanguageCode Language { get; set; } = LanguageCode.Auto;
     public bool AutoStartRecord { get; set; } = false;
     public bool AutoStopRecord { get; set; } = false;
     public bool AutoTranscript { get; set; } = false;
@@ -23,7 +23,7 @@ public sealed class SettingsEntity : AggregateRoot
     public bool AutoCancelMeeting { get; set; }
     public bool AutoDeleteMeeting { get; set; }
     public bool AutoCleanOrphanFragments { get; set; }
-
+    public bool LiveTranscriptionEnabled { get; set; }
     public TranscriptionType TranscriptionType { get; set; } = TranscriptionType.Grpc;
     public AudioRecordingType AudioRecordingType { get; set; } = AudioRecordingType.Native;
     public WhisperModelType WhisperModelType { get; set; } = WhisperModelType.Auto;
@@ -32,4 +32,5 @@ public sealed class SettingsEntity : AggregateRoot
     public DiarizationModelType DiarizationModelType { get; set; } = DiarizationModelType.Auto;
     public SummaryModelType SummarizeModelType { get; set; } = SummaryModelType.Auto;
     public SummarizeDetailLevel SummarizeDetailLevel { get; set; } = SummarizeDetailLevel.Standard;
+    
 }

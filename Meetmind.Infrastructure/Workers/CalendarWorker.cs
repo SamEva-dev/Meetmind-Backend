@@ -46,7 +46,7 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
                 var meetingCreator = scope.ServiceProvider.GetRequiredService<IMeetingCreatorService>();
 
                 var now = _clock.UtcNow;
-                var meetings = await meetingCreator.GetTodayMeetingsFromCalendarsAsync(now, stoppingToken);
+                var meetings = await meetingCreator.GetTodayMeetingsFromCalendarsAsync(DateTime.Now, stoppingToken);
 
                 foreach (var calendarMeeting in meetings)
                 {
@@ -62,7 +62,7 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur dans CalendarWorker : {Message}", ex.Message);
+                _logger.LogError(ex, "CalendarWorker error: {Message}", ex.Message);
             }
         }
     }

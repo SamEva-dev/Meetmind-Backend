@@ -74,6 +74,14 @@ public class DeleteAudioHandler : IRequestHandler<DeleteAudioCommand, Unit>
 
         await _notificationService.NotifyAudioDeletedAsync(_mapper.Map<MeetingDto>(meeting), cancellationToken);
 
+        await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications()
+        {
+            MeetingId = meeting.Id,
+            Title = meeting.Title,
+            Message = $"Audio deleted for meeting {request.MeetingId}",
+            Time = DateTime.UtcNow
+        }, cancellationToken);
+
         return Unit.Value;
 
     }

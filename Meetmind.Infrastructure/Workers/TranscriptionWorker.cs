@@ -62,6 +62,13 @@ public sealed class TranscriptionWorker : BackgroundService
             {
                 meeting.MarkTranscriptionProcessing();
                 await _notificationService.NotifyTranscriptionProcessingAsync(_mapper.Map<MeetingDto>(meeting), ct);
+                await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+                {
+                    MeetingId = meeting.Id,
+                    Title = meeting.Title,
+                    Message = $"Transcription en cours pour la réunion {meeting.Id}",
+                    Time = DateTime.UtcNow
+                }, ct);
                 await db.SaveChangesAsync(ct);
 
                 await _transcriptionService.TranscribeAsync(meeting, ct);
@@ -69,6 +76,13 @@ public sealed class TranscriptionWorker : BackgroundService
                 meeting.MarkTranscriptionCompleted();
                 meeting.QueueSummary();
                 await _notificationService.NotifyTranscriptionCompletedAsync(_mapper.Map<MeetingDto>(meeting), ct);
+                await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+                {
+                    MeetingId = meeting.Id,
+                    Title = meeting.Title,
+                    Message = $"Transcription terminée pour la réunion {meeting.Id}",
+                    Time = DateTime.UtcNow
+                }, ct);
                 _logger.LogInformation("✅ Transcription complétée pour {Id}", meeting.Id);
             }
             catch (Exception ex)

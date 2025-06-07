@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Meetmind.Application.Command.Meetings;
 using Meetmind.Application.Dto;
+using Meetmind.Application.QueryHandles.Meetings;
 using Meetmind.Application.QueryHandles.Mettings;
 using Microsoft.AspNetCore.Mvc;
 
@@ -112,6 +113,58 @@ namespace Meetmind.Presentation.Controllers
             finally 
             {
                 _logger.LogInformation("Finished Create");
+            }
+        }
+
+        [HttpGet("recent")]
+        public async Task<IActionResult> GetRecenteMeeting([FromQuery] int? number = null)
+        {
+            try
+            {
+                _logger.LogInformation($"Get recent meeting with {number} page");
+
+                var result = await _mediator.Send(new GetRecentMeetingQuery(number));
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                _logger.LogWarning("Meeting not found");
+                return NotFound("Meeting not found.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting meeting");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
+            }
+            finally
+            {
+                _logger.LogInformation("Finished Get recent meeting");
+            }
+        }
+
+        [HttpGet("up-coming")]
+        public async Task<IActionResult> GetUpComingMeeting([FromQuery] int? number = null)
+        {
+            try
+            {
+                _logger.LogInformation($"Get up coming meeting with {number} page");
+
+                var result = await _mediator.Send(new GetUpComingMeetingQuery(number));
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                _logger.LogWarning("Meeting not found");
+                return NotFound("Meeting not found.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting meeting");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
+            }
+            finally
+            {
+                _logger.LogInformation("Finished Get become meeting");
             }
         }
     }

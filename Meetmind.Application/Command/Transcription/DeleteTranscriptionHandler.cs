@@ -39,6 +39,14 @@ namespace Meetmind.Application.Command.Transcription
 
             await _notificationService.NotifyTranscriptionDeletedAsync(cancellationToken);
 
+            await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+            {
+                MeetingId = transcription.MeetingId,
+                Title = transcription.Tilte,
+                Message = $"Transcription for meeting {transcription.MeetingId} has been deleted",
+                Time = DateTime.UtcNow
+            }, cancellationToken);
+
             return Unit.Value;
         }
     }

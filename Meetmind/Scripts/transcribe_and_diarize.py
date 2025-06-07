@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 import tempfile
 from datetime import datetime
 from enum import Enum
+from pydantic import BaseModel
 
 # Forcer UTF-8 sur Windows
 if hasattr(sys.stdout, "reconfigure"):
@@ -144,7 +145,7 @@ async def transcribe(
         logger.info(f"Audio saved to temp file: {tmp_path}")
 
         # 2. Détection automatique de langue si non spécifiée/auto
-        lang = language
+        lang = language.lower()
         if not lang or lang.lower() in ("", "auto", "none"):
             quick_model = get_whisper_model(WHISPER_MODEL_FALLBACK, whisper_device, whisper_compute_type)
             logger.info("Langue non spécifiée, transcription rapide pour détection de langue.")
@@ -230,7 +231,70 @@ async def transcribe(
         logger.error(f"Transcription or diarization failed: {e}", exc_info=True)
         return JSONResponse({"error": str(e), "success": False}, status_code=500)
 
-from pydantic import BaseModel
+@app.post("/transcribe_chunk")
+async def transcribe_chunk(
+    audio: UploadFile = File(...),
+    language: str = Form(None),
+    whisper_model: str = Form(None),
+    whisper_device: str = Form("cpu"),
+    whisper_compute_type: str = Form("int8"),
+):
+    logger.info(f"Received live chunk transcription request: {audio.filename}")
+
+    try:
+        # 1. Save temp audio
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmpfile:
+            tmp_path = tmpfile.name
+            tmpfile.write(await audio.read())
+        logger.info(f"Live audio chunk saved to temp file: {tmp_path}")
+
+        # 2. Détection automatique de langue si non spécifiée/auto
+        lang = (language or "").lower()
+        if not lang or lang in ("", "auto", "none"):
+            quick_model = get_whisper_model(WHISPER_MODEL_FALLBACK, whisper_device, whisper_compute_type)
+            logger.info("Langue non spécifiée pour chunk, transcription rapide pour détection.")
+            segments, info = quick_model.transcribe(tmp_path, beam_size=1, vad_filter=True)
+            text_concat = " ".join([s.text.strip() for s in segments])
+            if detect and text_concat:
+                try:
+                    lang = detect(text_concat)
+                    logger.info(f"Langue détectée automatiquement : {lang}")
+                except Exception as e:
+                    lang = "fr"
+                    logger.warning(f"Langue non détectée. Défaut: 'fr'. Cause: {e}")
+            else:
+                lang = "fr"
+                logger.warning("Langue non détectée (langdetect manquant ou texte vide), défaut: 'fr'")
+
+        # 3. Modèle Whisper optimal selon langue (sauf si explicitement demandé)
+        w_model = whisper_model
+        if not w_model or w_model.lower() in ("auto", "default", ""):
+            w_model = WHISPER_MODEL_FOR_LANG.get(lang, WHISPER_MODEL_FALLBACK)
+            logger.info(f"Modèle Whisper choisi dynamiquement pour chunk: {w_model} (langue : {lang})")
+        else:
+            logger.info(f"Modèle Whisper explicitement demandé pour chunk: {w_model}")
+        whisper = get_whisper_model(w_model, whisper_device, whisper_compute_type)
+
+        # 4. Transcription simple, pas de diarisation (pour la vitesse live)
+        logger.info("Starting Whisper transcription (chunk)...")
+        segments, info = whisper.transcribe(tmp_path, language=lang, beam_size=2, vad_filter=True)
+        segment_texts = [segment.text.strip() for segment in segments if segment.text.strip()]
+        text = " ".join(segment_texts)
+        logger.info(f"Live chunk transcription done, texte extrait: {text!r}")
+
+        output = {
+            "text": text,
+            "language": lang,
+            "duration": getattr(info, "duration", None),
+            "success": True
+        }
+
+        os.unlink(tmp_path)
+        return JSONResponse(output)
+    except Exception as e:
+        logger.error(f"Live chunk transcription failed: {e}", exc_info=True)
+        return JSONResponse({"error": str(e), "success": False}, status_code=500)
+
 
 class DetailLevel(str, Enum):
     short = "short"

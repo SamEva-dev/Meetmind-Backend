@@ -35,6 +35,14 @@ public class CreateMeetingHandler : IRequestHandler<CreateMeetingCommand, Guid>
         var meeting = await _meetingRepository.GetMeetingById(meetingId, cancellationToken);
         await _notificationService.NotifyMeetingCreatedAsync(meeting, cancellationToken);
 
+        await _notificationService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = meetingId,
+            Title = request.Title,
+            Message = $"Meeting {request.Title} has been created successfully.",
+            Time = DateTime.UtcNow
+        }, cancellationToken);
+
         return meetingId;
     }
 }

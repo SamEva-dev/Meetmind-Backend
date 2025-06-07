@@ -48,6 +48,13 @@ public sealed class ResumeRecordingHandler : IRequestHandler<ResumeRecordingComm
         await _uow.SaveChangesAsync(cancellationToken);
         await _recordingNotifierService.NotifyRecordingResumedAsync(
             _mapper.Map<MeetingDto>(meeting), cancellationToken);
+        await _recordingNotifierService.NotifyMeetingAsync(new Domain.Models.Notifications
+        {
+            MeetingId = meeting.Id,
+            Title = meeting.Title,
+            Message = $"Recording for meeting {meeting.Id} has been resumed",
+            Time = DateTime.UtcNow
+        }, cancellationToken);
         return Unit.Value;
     }
 }

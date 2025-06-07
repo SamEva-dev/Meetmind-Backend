@@ -2,8 +2,10 @@
 using Meetmind.Application.Dto;
 using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Entities;
+using Meetmind.Domain.Models;
 using Meetmind.Presentation.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Graph.Models;
 
 namespace Meetmind.Infrastructure.Hubs
 {
@@ -15,6 +17,7 @@ namespace Meetmind.Infrastructure.Hubs
         private readonly IHubContext<AudioHub> _audioHub;
         private readonly IHubContext<TranscriptHub> _transcriptHub;
         private readonly IHubContext<SummaryHub> _summaryHub;
+        private readonly IHubContext<NotificationHub> _noticationHub;
         private readonly IMapper _mapper;
 
         public SignalRNotificationService(
@@ -24,7 +27,9 @@ namespace Meetmind.Infrastructure.Hubs
             IHubContext<RecordingHub> recordingHub,
             IHubContext<TranscriptHub> transcriptHub,
             IHubContext<SummaryHub> summaryHub,
-            IMapper mapper)
+
+            IMapper mapper,
+            IHubContext<NotificationHub> noticationHub)
         {
             _settingsHub = settingsHub;
             _meetingsHub = meetingsHub;
@@ -33,6 +38,7 @@ namespace Meetmind.Infrastructure.Hubs
             _recordingHub = recordingHub;
             _transcriptHub = transcriptHub;
             _summaryHub = summaryHub;
+            _noticationHub = noticationHub;
         }
 
         public async Task NotifyAudioDeletedAsync(MeetingDto meetingDto, CancellationToken cancellationToken)
@@ -163,5 +169,14 @@ namespace Meetmind.Infrastructure.Hubs
             await _meetingsHub.Clients.All.SendAsync("MeetingReminder", new { meetingId, message });
         }
 
+        public async Task NotifyMeetingAsync(Notifications notifications, CancellationToken cancellationToken)
+        {
+            await _noticationHub.Clients.All.SendAsync("NotificationMeeting", notifications);
+        }
+
+        public async Task NotifyLiveTranscriptionAsync(string text, CancellationToken ct)
+        {
+            await _transcriptHub.Clients.All.SendAsync("LiveTranscription", text, ct);
+        }
     }
 }
