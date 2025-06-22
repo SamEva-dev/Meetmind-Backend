@@ -66,7 +66,7 @@ public sealed class TranscriptionWorker : BackgroundService
                 {
                     MeetingId = meeting.Id,
                     Title = meeting.Title,
-                    Message = $"Transcription en cours pour la réunion {meeting.Id}",
+                    Message = $"Transcription in progress for the meeting {meeting.Id}",
                     Time = DateTime.UtcNow
                 }, ct);
                 await db.SaveChangesAsync(ct);
@@ -80,16 +80,16 @@ public sealed class TranscriptionWorker : BackgroundService
                 {
                     MeetingId = meeting.Id,
                     Title = meeting.Title,
-                    Message = $"Transcription terminée pour la réunion {meeting.Id}",
+                    Message = $"Transcription completed for the meeting {meeting.Id}",
                     Time = DateTime.UtcNow
                 }, ct);
-                _logger.LogInformation("✅ Transcription complétée pour {Id}", meeting.Id);
+                _logger.LogInformation("✅ Transcription completed for {Id}", meeting.Id);
             }
             catch (Exception ex)
             {
                 meeting.MarkTranscriptionFailed();
                 await _notificationService.NotifyTranscriptionErrorAsync(_mapper.Map<MeetingDto>(meeting), ex.Message, ct);
-                _logger.LogError(ex, "❌ Échec de la transcription pour {Id}", meeting.Id);
+                _logger.LogError(ex, "❌ Transcription failed for {Id}", meeting.Id);
             }
 
             await db.SaveChangesAsync(ct);

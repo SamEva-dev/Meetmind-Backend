@@ -91,6 +91,6 @@ var host = Host.CreateDefaultBuilder(args)
 
 MigrationManager.ApplyMigrations(host);
 
-//FastApiWorkerManager.StartAndMonitor(configuration, host);
+FastApiWorkerManager.StartAndMonitor(configuration, host);
 
 host.Run();

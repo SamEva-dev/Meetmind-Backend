@@ -56,12 +56,16 @@ public class NativeAudioRecordingService : IAudioRecordingService
         _db = db;
         _recordingNotifierService = recordingNotifierService;
         _audioTranscriptionService = audioTranscriptionService;
+       var TempDir = Path.Combine(Path.GetTempPath(), $"MeetingChunks_");
     }
 
-    public Task StartAsync(Guid meetingId, string filePath, CancellationToken ct)
+    public  Task StartAsync(Guid meetingId, string filePath, CancellationToken ct)
     {
         _logger.LogInformation("Démarrage de l'enregistrement pour la réunion {Id}", meetingId);
         _audioFragments.TryAdd(meetingId, new List<string>());
+
+        var audioPath = AudioFileHelper.GenerateAudioPath(filePath, meetingId);
+    
         return StartFragment(meetingId, filePath, ct);
     }
 
