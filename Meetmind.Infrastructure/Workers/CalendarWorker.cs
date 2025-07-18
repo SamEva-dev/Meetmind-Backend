@@ -75,6 +75,11 @@ public sealed class CalendarWorker : BackgroundService, ICalendarWorker
         var settings = await dbContext.Settings
                             .AsNoTracking()
                             .FirstOrDefaultAsync(cancellationToken);
+        if (settings == null)
+        {
+            _logger.LogWarning("Settings not found, skipping auto recording processing.");
+            return;
+        }   
 
         if (settings.AutoCancelMeeting)
             await CancelDeletedOrRemoteCancelledMeetingsAsync(dbContext, cancellationToken);

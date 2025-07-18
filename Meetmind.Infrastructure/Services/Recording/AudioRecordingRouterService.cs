@@ -2,7 +2,7 @@
 using MediatR;
 using Meetmind.Application.Command.Transcription;
 using Meetmind.Application.Repositories;
-using Meetmind.Application.Services;
+using Meetmind.Application.Services.AudioRecorder;
 using Meetmind.Domain.Entities;
 using Meetmind.Domain.Enums;
 using Meetmind.Infrastructure.Database;

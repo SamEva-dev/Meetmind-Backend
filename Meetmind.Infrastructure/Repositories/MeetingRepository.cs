@@ -8,6 +8,7 @@ using Meetmind.Application.Command.Meetings;
 using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Domain.Entities;
+using Meetmind.Domain.Enums;
 using Meetmind.Domain.Models;
 using Meetmind.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
@@ -145,5 +146,31 @@ public class MeetingRepository : IMeetingRepository
             Page = page,
             PageSize = pageSize
         };
+    }
+
+    public async Task ExecuteSqlRawAsync(ExecuteType type)
+    {
+        try
+        {
+            switch (type)
+            {
+                case ExecuteType.DELETE:
+                    await _dbContext.Database.ExecuteSqlRawAsync("DELETE FROM Meetings");
+                    break;
+                case ExecuteType.DROP:
+                    await _dbContext.Database.ExecuteSqlRawAsync(
+                        " DROP TABLE IF EXISTS AudioEventLogs");
+                    break;
+                default:
+                    break;
+            }
+           
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
+        
     }
 }

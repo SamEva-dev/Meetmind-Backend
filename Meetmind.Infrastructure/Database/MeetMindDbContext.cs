@@ -5,7 +5,6 @@ using Meetmind.Domain.Enums;
 using Meetmind.Domain.Models;
 using Meetmind.Domain.Units;
 using Meetmind.Infrastructure.Events;
-using Meetmind.Infrastructure.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Meetmind.Infrastructure.Database

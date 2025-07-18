@@ -3,6 +3,7 @@ using Meetmind.Application.Services;
 using Meetmind.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Meetmind.Domain.Entities;
+using Meetmind.Infrastructure.Services.Transcription.Interfaces.Implementations;
 
 namespace Meetmind.Infrastructure.Services.Transcription;
 
@@ -24,7 +25,7 @@ public class ProcessTranscriptionService : ITranscriptionService
         _logger.LogInformation("Début de la transcription pour la réunion {MeetingId}", meeting.Id);
         try
         {
-            var result = await _audioTranscriptionService.TranscribeAsync(meeting, ct);
+            var result = await _audioTranscriptionService.TranscribeMeetingAsync(meeting, ct);
             return result;
         }
         catch (Exception ex)

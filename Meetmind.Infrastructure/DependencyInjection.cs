@@ -19,6 +19,11 @@ using AutoMapper.Extensions.EnumMapping;
 using AutoMapper.EquivalencyExpression;
 using Meetmind.Infrastructure.Services.Summarize;
 using Meetmind.Application.Services.Notification;
+using Meetmind.Application.Services.AudioRecorder;
+using Meetmind.Infrastructure.Services.Transcription.Interfaces.Implementations;
+using Meetmind.Infrastructure.Services.Recording.Interfaces.Implementations;
+using Meetmind.Infrastructure.Services.Recording.Interfaces;
+using Meetmind.Infrastructure.Services.Transcription.Interfaces;
 
 namespace Meetmind.Infrastructure
 {
@@ -75,6 +80,18 @@ namespace Meetmind.Infrastructure
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped<IOutlookTokenService, OutlookTokenService>();
             services.AddScoped<IAudioFragmentRepository, AudioFragmentRepository>();
+
+            services.AddScoped<IAudioRecordingService, NativeAudioRecordingService>();
+            services.AddScoped<IAudioRecordingService, NativeAudioRecordingService>();
+
+            services.AddScoped<IWaveInFactory, WaveInFactory>();
+            services.AddScoped<IAudioFileStorage, AudioFileStorage>();
+            services.AddSingleton<IAudioSessionManager, AudioSessionManager>();
+
+            services.AddScoped<IAudioTranscriptionService, AudioTranscriptionService>();
+            services.AddScoped<IAudioSession, NativeAudioSession>();
+
+            services.AddScoped<ITranscriptionStrategy, PythonApiTranscriptionStrategy>();
 
             services.AddScoped<ISummarizeService, SummarizeService>();
 

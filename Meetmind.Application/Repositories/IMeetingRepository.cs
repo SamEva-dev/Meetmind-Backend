@@ -12,4 +12,5 @@ public interface IMeetingRepository : IRepository<MeetingEntity>
     Task<MeetingEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Guid> CreateMeetingAsync(CreateMeetingCommand request, CancellationToken cancellationToken);
     Task<MeetingDto?> GetAllAsync(int? count, CancellationToken cancellationToken);
+    Task ExecuteSqlRawAsync(Domain.Enums.ExecuteType dELETE);
 }

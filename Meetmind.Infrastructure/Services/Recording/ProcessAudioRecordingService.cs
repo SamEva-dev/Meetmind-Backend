@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using Meetmind.Application.Helper;
-using Meetmind.Application.Services;
+using Meetmind.Application.Services.AudioRecorder;
 using Meetmind.Domain.Enums;
 
 namespace Meetmind.Infrastructure.Services.Recording;

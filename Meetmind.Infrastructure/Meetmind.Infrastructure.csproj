@@ -62,6 +62,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+    <Folder Include="Migrations\" />
     <Folder Include="Models\" />
   </ItemGroup>
 	
@@ -69,6 +70,22 @@
     <None Include="Resources\native\whisper.dll">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <None Remove="C:\Users\samev\.nuget\packages\vosk\0.3.38\build\lib\win-x64\libgcc_s_seh-1.dll" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <None Remove="C:\Users\samev\.nuget\packages\vosk\0.3.38\build\lib\win-x64\libstdc++-6.dll" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <None Remove="C:\Users\samev\.nuget\packages\vosk\0.3.38\build\lib\win-x64\libvosk.dll" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <None Remove="C:\Users\samev\.nuget\packages\vosk\0.3.38\build\lib\win-x64\libwinpthread-1.dll" />
 	</ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using MediatR;
 using Meetmind.Application.Dto;
 using Meetmind.Application.Repositories;
 using Meetmind.Application.Services;
+using Meetmind.Application.Services.AudioRecorder;
 using Meetmind.Application.Services.Notification;
 using Meetmind.Domain.Entities;
 using Microsoft.Extensions.Logging;

@@ -1,6 +1,6 @@
 ﻿using Meetmind.Domain.Enums;
 
-namespace Meetmind.Application.Services;
+namespace Meetmind.Application.Services.AudioRecorder;
 
 public interface IAudioRecordingService
 {
