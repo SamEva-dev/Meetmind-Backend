@@ -6,17 +6,55 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Meetmind.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class initial2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AudioEventLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    MeetingId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Action = table.Column<string>(type: "TEXT", nullable: false),
+                    UtcTimestamp = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: true),
+                    Details = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AudioEventLogs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AudioMetadatas",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    MeetingId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FilePath = table.Column<string>(type: "TEXT", nullable: false),
+                    Title = table.Column<string>(type: "TEXT", nullable: false),
+                    StartUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    EndUtc = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    FragmentCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    Duration = table.Column<TimeSpan>(type: "TEXT", nullable: true),
+                    UserId = table.Column<string>(type: "TEXT", nullable: true),
+                    DeviceId = table.Column<string>(type: "TEXT", nullable: true),
+                    AppVersion = table.Column<string>(type: "TEXT", nullable: true),
+                    Extra = table.Column<string>(type: "TEXT", nullable: true),
+                    UploadedUtc = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AudioMetadatas", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CalendarSyncLogs",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     TimestampUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Source = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     TotalEventsFound = table.Column<int>(type: "INTEGER", nullable: false),
@@ -93,12 +131,16 @@ namespace Meetmind.Infrastructure.Migrations
                     RetentionDays = table.Column<int>(type: "INTEGER", nullable: false),
                     AutoCancelMeeting = table.Column<bool>(type: "INTEGER", nullable: false),
                     AutoDeleteMeeting = table.Column<bool>(type: "INTEGER", nullable: false),
+                    AutoCleanOrphanFragments = table.Column<bool>(type: "INTEGER", nullable: false),
+                    LiveTranscriptionEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
                     TranscriptionType = table.Column<string>(type: "TEXT", nullable: false),
                     AudioRecordingType = table.Column<string>(type: "TEXT", nullable: false),
                     WhisperModelType = table.Column<string>(type: "TEXT", nullable: false),
                     WhisperDeviceType = table.Column<string>(type: "TEXT", nullable: false),
                     WhisperComputeType = table.Column<string>(type: "TEXT", nullable: false),
-                    DiarizationModelType = table.Column<string>(type: "TEXT", nullable: false)
+                    DiarizationModelType = table.Column<string>(type: "TEXT", nullable: false),
+                    SummarizeModelType = table.Column<string>(type: "TEXT", nullable: false),
+                    SummarizeDetailLevel = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -110,6 +152,7 @@ namespace Meetmind.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    MeetingId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Tilte = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
                     SourceFile = table.Column<string>(type: "TEXT", nullable: false),
                     Text = table.Column<string>(type: "TEXT", nullable: false),
@@ -166,6 +209,12 @@ namespace Meetmind.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AudioEventLogs");
+
+            migrationBuilder.DropTable(
+                name: "AudioMetadatas");
+
             migrationBuilder.DropTable(
                 name: "CalendarSyncLogs");
 

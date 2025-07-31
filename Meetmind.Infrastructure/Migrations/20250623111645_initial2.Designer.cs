@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Meetmind.Infrastructure.Migrations
 {
     [DbContext(typeof(MeetMindDbContext))]
-    [Migration("20250524144824_SummarizeModelTypestring")]
-    partial class SummarizeModelTypestring
+    [Migration("20250623111645_initial2")]
+    partial class initial2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -226,6 +226,9 @@ namespace Meetmind.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("LiveTranscriptionEnabled")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("NotificationRepeatInterval")
                         .HasColumnType("INTEGER");
 
@@ -237,6 +240,10 @@ namespace Meetmind.Infrastructure.Migrations
 
                     b.Property<int>("RetentionDays")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("SummarizeDetailLevel")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SummarizeModelType")
                         .IsRequired()
